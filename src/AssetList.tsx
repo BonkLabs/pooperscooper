@@ -5,7 +5,7 @@ import {
     useWallet,
     WalletContextState,
 } from '@solana/wallet-adapter-react';
-import { Connection, GetProgramAccountsFilter, TransactionInstruction, VersionedTransaction, sendAndConfirmTransaction } from "@solana/web3.js";
+import { Connection, GetProgramAccountsFilter, TransactionInstruction, VersionedTransaction, sendAndConfirmTransaction, PublicKey } from "@solana/web3.js";
 import { isBurnInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { createJupiterApiClient, DefaultApi, QuoteGetRequest, SwapResponse, SwapPostRequest, QuoteResponse } from '@jup-ag/api';
 import reportWebVitals from "./reportWebVitals";
@@ -45,18 +45,35 @@ async function getTokenAccounts(wallet: string, solanaConnection: Connection, to
             bytes: wallet,
           },            
         }];
-    const accounts = await solanaConnection.getParsedProgramAccounts(
+    const accountsOld = await solanaConnection.getParsedProgramAccounts(
         TOKEN_PROGRAM_ID,
         {filters: filters}
     );
+    const filtersOld:GetProgramAccountsFilter[] = [
+        {
+          dataSize: 182,
+        },
+        {
+          memcmp: {
+            offset: 32,
+            bytes: wallet,
+          },            
+        }];
+    const accountsNew = await solanaConnection.getParsedProgramAccounts(
+        new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"),
+        {filters: filtersOld}
+    );
+
+    const accounts = [...accountsOld, ...accountsNew];
+    
     console.log(`Found ${accounts.length} token account(s) for wallet ${wallet}.`);
     var tokens : {account: any, token: any, balance: any}[] = [];
 
     accounts.forEach((account, i) => {
         const parsedAccountInfo: any = account.account.data;
+        console.log(parsedAccountInfo)
         const mintAddress: string = parsedAccountInfo["parsed"]["info"]["mint"];
         const tokenBalance: number = parsedAccountInfo["parsed"]["info"]["tokenAmount"]["uiAmount"];
-
         if (tokenList[mintAddress]) {
             console.log("Recognised token: " + tokenList[mintAddress].symbol + " have: " + tokenBalance.toString())
             tokens.push({account: account, token: tokenList[mintAddress], balance: tokenBalance.toString()})
@@ -198,6 +215,7 @@ const AssetList: React.FC = () => {
                                 <th>{entry.asset.token.symbol}</th>
                                 <th>{entry.asset.balance}</th>
                                 <th>{entry.quote.outAmount}</th>
+                                <th>{entry.asset.token.strict && <p>Strict</p>}</th>
                                 <th><input id={"input"+entry.asset.token.address} type="checkbox"/></th>
                             </tr>
                         ))
