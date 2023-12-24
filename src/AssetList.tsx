@@ -5,9 +5,10 @@ import {
     useWallet,
     WalletContextState,
 } from '@solana/wallet-adapter-react';
-import { Connection, GetProgramAccountsFilter, TransactionInstruction, VersionedTransaction, sendAndConfirmTransaction, PublicKey } from "@solana/web3.js";
+import { Connection, GetProgramAccountsFilter, TransactionInstruction, VersionedTransaction, sendAndConfirmRawTransaction, PublicKey } from "@solana/web3.js";
 import { isBurnInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { createJupiterApiClient, DefaultApi, QuoteGetRequest, SwapResponse, SwapPostRequest, QuoteResponse } from '@jup-ag/api';
+import { Buffer } from 'buffer';
 
 interface Token {
     address: string;
@@ -85,6 +86,8 @@ const AssetList: React.FC = () => {
     }
 
     var loading = false;
+
+    /* Scoop all the selected tokens */
     const scoop = () => {
         setScooped(true)
         let transactions: [string, VersionedTransaction][] = [];
@@ -101,23 +104,28 @@ const AssetList: React.FC = () => {
                 transactions.push([swap.asset.token.address, transaction]);
             }
         });
+        if (wallet.signAllTransactions) {
+            wallet.signAllTransactions(transactions.map(([id, transaction]) => transaction)).then( signedTransactions => {
+                console.log("Signed transactions:")
+                console.log(signedTransactions)
+                console.log(transactions)
 
-        transactions.forEach(([id, transaction]) => {
-            if (wallet.sendTransaction) {
-                swapList[id].transactionState = "Scooping"
-                forceUpdate()
-                wallet.sendTransaction(transaction, connection).then( tx => {
-                    console.log("Transaction Success!")
-                    swapList[id].transactionState = "Scooped"
+                signedTransactions.forEach((transaction, i) => {
+                    swapList[transactions[i][0]].transactionState = "Scooping"
                     forceUpdate()
-                }).catch( err => {
-                    console.log("Transaction failed!")
-                    console.log(err)
-                    swapList[id].transactionState = "Failed to scoop"
-                    forceUpdate()
-                })
-            }
-        })
+                    sendAndConfirmRawTransaction(connection, Buffer.from(transaction.serialize()), {}).then( result => {
+                        console.log("Transaction Success!")
+                        swapList[transactions[i][0]].transactionState = "Scooped"
+                        forceUpdate()
+                    }).catch( err => {
+                        console.log("Transaction failed!")
+                        console.log(err)
+                        swapList[transactions[i][0]].transactionState = "Failed to scoop"
+                        forceUpdate()
+                    })
+                });
+            });
+        }
     }
 
     /* Set the wallet address once until it changes */
@@ -209,43 +217,45 @@ const AssetList: React.FC = () => {
         return (<></>)
     }
     return (
-        <>
-            <div>
-                <table>
-                    <tbody>
-                    <tr>
-                        <th>Symbol</th>
-                        <th>Balance</th>
-                        <th>Scoop Value</th>
-                        <th>Strict</th>
-                        <th>Scoop?</th>
-                        <th>Status</th>
-                    </tr>
-                    {
-                        Object.entries(swapList).map(([key, entry]) => (
-                            <tr key={entry.asset.token.address}>
-                                <th>{entry.asset.token.symbol}</th>
-                                <th>{entry.asset.balance}</th>
-                                <th>{entry.quote.outAmount}</th>
-                                <th>{entry.asset.token.strict && <p>Strict</p>}</th>
-                                <th><input onChange={(change) => {swapList[entry.asset.token.address].checked = change.target.checked; forceUpdate()}} type="checkbox"/></th>
-                                <th>{entry.transactionState && <p>{entry.transactionState}</p>}</th>
-                            </tr>
-                        ))
-                    }
-                    </tbody> 
-                </table>
-                <div>
+        <>  <div>
+                <div style={{width: "100vw", height: "30vh"}}></div>
+                <div style={{width: "100vw", height: "70vh"}}>
+                    <table style={{width: "100vw", height: "70%"}}>
+                        <tbody>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Balance</th>
+                            <th>Scoop Value</th>
+                            <th>Strict</th>
+                            <th>Scoop?</th>
+                            <th>Status</th>
+                        </tr>
+                        {
+                            Object.entries(swapList).map(([key, entry]) => (
+                                <tr key={entry.asset.token.address}>
+                                    <td>{entry.asset.token.symbol}</td>
+                                    <td>{entry.asset.balance}</td>
+                                    <td>{entry.quote.outAmount}</td>
+                                    <td>{entry.asset.token.strict && <p>Strict</p>}</td>
+                                    <td><input onChange={(change) => {swapList[entry.asset.token.address].checked = change.target.checked; forceUpdate()}} type="checkbox"/></td>
+                                    <td>{entry.transactionState && <p>{entry.transactionState}</p>}</td>
+                                </tr>
+                            ))
+                        }
+                        </tbody> 
+                    </table>
                     <div>
-                        <label>Possible Scoop:</label>
-                        <label>{possibleScoop}</label>
+                        <div>
+                            <label>Possible Scoop:</label>
+                            <label>{possibleScoop}</label>
+                        </div>
+                        <div>
+                            <label>Total Scoop:</label>
+                            <label>{totalScoop}</label>
+                        </div>
+                        
+                        { scooped || <button onClick={scoop}>Scoop</button> }
                     </div>
-                    <div>
-                        <label>Total Scoop:</label>
-                        <label>{totalScoop}</label>
-                    </div>
-                    
-                    { scooped || <button onClick={scoop}>Scoop</button> }
                 </div>
             </div>
         </>
