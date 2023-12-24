@@ -3,4 +3,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
+}
+
+.NormalText {
+  font-size: x-large;
+  text-align: center;
+  font-weight: bold;
+  -webkit-text-fill-color: rgb(255, 0, 0);
+  font-family: "Comic Sans MS";
+  background: rgba(255, 255, 255, 0.541);
+}
+
+body {
+  background: #222222;
+  margin: 0;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: auto;
 }

@@ -218,9 +218,9 @@ const AssetList: React.FC = () => {
     }
     return (
         <>  <div>
-                <div style={{width: "100vw", height: "30vh"}}></div>
-                <div style={{width: "100vw", height: "70vh"}}>
-                    <table style={{width: "100vw", height: "70%"}}>
+                <div> </div>
+                <div className="NormalText" style={{position: "absolute", top: "340px", left: "0px"}} >
+                    <table style={{ height: "70%"}}>
                         <tbody>
                         <tr>
                             <th>Symbol</th>
@@ -232,12 +232,12 @@ const AssetList: React.FC = () => {
                         </tr>
                         {
                             Object.entries(swapList).map(([key, entry]) => (
-                                <tr key={entry.asset.token.address}>
+                                <tr key={entry.asset.token.address} style={{background: {rgba(255, 255, 255, 0.541)}}}>
                                     <td>{entry.asset.token.symbol}</td>
                                     <td>{entry.asset.balance}</td>
                                     <td>{entry.quote.outAmount}</td>
                                     <td>{entry.asset.token.strict && <p>Strict</p>}</td>
-                                    <td><input onChange={(change) => {swapList[entry.asset.token.address].checked = change.target.checked; forceUpdate()}} type="checkbox"/></td>
+                                    <td><input onChange={(change) => {swapList[entry.asset.token.address].checked = change.target.checked; forceUpdate()}} type="checkbox" disabled={scooped}/></td>
                                     <td>{entry.transactionState && <p>{entry.transactionState}</p>}</td>
                                 </tr>
                             ))
@@ -254,7 +254,7 @@ const AssetList: React.FC = () => {
                             <label>{totalScoop}</label>
                         </div>
                         
-                        { scooped || <button onClick={scoop}>Scoop</button> }
+                        { scooped || <button className="NormalText" onClick={scoop}>Scoop</button> }
                     </div>
                 </div>
             </div>
