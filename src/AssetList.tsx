@@ -8,7 +8,6 @@ import {
 import { Connection, GetProgramAccountsFilter, TransactionInstruction, VersionedTransaction, sendAndConfirmTransaction, PublicKey } from "@solana/web3.js";
 import { isBurnInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { createJupiterApiClient, DefaultApi, QuoteGetRequest, SwapResponse, SwapPostRequest, QuoteResponse } from '@jup-ag/api';
-import reportWebVitals from "./reportWebVitals";
 
 interface Token {
     address: string;
@@ -20,18 +19,6 @@ interface Token {
     tags: string[];
     strict?: boolean;
 };
-
-/* Execute Transaction */
-async function sendTransactionWithInstructions(connection: Connection, wallet: WalletContextState, transactions: VersionedTransaction[]) {
-    transactions.forEach(transaction => {
-        if (wallet.signTransaction) {
-            wallet.signTransaction(transaction).then( tx => {
-                
-            })
-        }
-    })
-    
-}
 
 /* Fetch all the token accounts for a wallet */
 async function getTokenAccounts(wallet: string, solanaConnection: Connection, tokenList: { [id: string] : Token; }) {
@@ -85,33 +72,52 @@ async function getTokenAccounts(wallet: string, solanaConnection: Connection, to
 const AssetList: React.FC = () => {
     const { connection } = useConnection();
     const wallet = useWallet();
-    const [swapList, setSwapList] = React.useState<{ [id: string] : {asset: any, quote:QuoteResponse, swap:SwapResponse}}>({});
+    const [swapList, setSwapList] = React.useState<{ [id: string] : {asset: any, quote: QuoteResponse, swap: SwapResponse, checked: boolean, transactionState?: string}}>({});
     const [walletAddress, setWalletAddress] = React.useState("");
     const [tokens, setTokens] = React.useState<{ [id: string] : Token; }>({});
     const [totalScoop, setTotalScoop] = React.useState(0);
     const [possibleScoop, setPossibleScoop] = React.useState(0);
+    const [forcedCounter, setForcedCounter] = React.useState(0);
+    const [scooped, setScooped] = React.useState(false);
+
+    function forceUpdate() {
+        setForcedCounter(s => (s+1));
+    }
+
     var loading = false;
     const scoop = () => {
-        let transactions: VersionedTransaction[] = [];
+        setScooped(true)
+        let transactions: [string, VersionedTransaction][] = [];
         Object.entries(swapList).forEach(([key, swap]) => {
-            const element = document.getElementById("input"+swap.asset.token.address) as HTMLInputElement | null;
-            if (element) {
-                if (element.checked) {
+            if (swap.checked) {
+                // deserialize the transaction
+                const swapTransactionBuf = atob(swap.swap.swapTransaction);
+                const swapTransactionAr = new Uint8Array(swapTransactionBuf.length);
 
-                    // deserialize the transaction
-                    const swapTransactionBuf = atob(swap.swap.swapTransaction);
-                    const swapTransactionAr = new Uint8Array(swapTransactionBuf.length);
-
-                    for (let i = 0; i < swapTransactionBuf.length; i++) {
-                        swapTransactionAr[i] = swapTransactionBuf.charCodeAt(i);
-                    }
-                    var transaction = VersionedTransaction.deserialize(swapTransactionAr);
-                    console.log(transaction);
-                    transactions.push(transaction);
+                for (let i = 0; i < swapTransactionBuf.length; i++) {
+                    swapTransactionAr[i] = swapTransactionBuf.charCodeAt(i);
                 }
+                var transaction = VersionedTransaction.deserialize(swapTransactionAr);
+                transactions.push([swap.asset.token.address, transaction]);
             }
         });
-        sendTransactionWithInstructions(connection, wallet, transactions)
+
+        transactions.forEach(([id, transaction]) => {
+            if (wallet.sendTransaction) {
+                swapList[id].transactionState = "Scooping"
+                forceUpdate()
+                wallet.sendTransaction(transaction, connection).then( tx => {
+                    console.log("Transaction Success!")
+                    swapList[id].transactionState = "Scooped"
+                    forceUpdate()
+                }).catch( err => {
+                    console.log("Transaction failed!")
+                    console.log(err)
+                    swapList[id].transactionState = "Failed to scoop"
+                    forceUpdate()
+                })
+            }
+        })
     }
 
     /* Set the wallet address once until it changes */
@@ -154,10 +160,12 @@ const AssetList: React.FC = () => {
                     const quoteRequest : QuoteGetRequest = {
                         inputMint: asset.token.address,
                         outputMint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
-                        amount: asset.balance,
+                        amount: Math.floor(asset.balance * Math.pow(10, asset.token.decimals)),
                         onlyDirectRoutes: false,
-                        asLegacyTransaction: false
+                        asLegacyTransaction: false,
+                        platformFeeBps: 100
                     }
+                    console.log(quoteRequest)
 
                     jupiterQuoteApi.quoteGet(quoteRequest).then( quote => {
                         let rq : SwapPostRequest = {
@@ -167,7 +175,7 @@ const AssetList: React.FC = () => {
                             }
                         }
                         jupiterQuoteApi.swapPost(rq).then( swap => {
-                            setSwapList(s => ({...s, [asset.token.address]: {asset: asset, quote:quote, swap:swap}}))
+                            setSwapList(s => ({...s, [asset.token.address]: {asset: asset, quote: quote, swap: swap, checked: false}}))
                         }).catch( err => {
                             console.log("Failed to get swap for " + asset.token.symbol)
                             console.log(err)
@@ -187,28 +195,32 @@ const AssetList: React.FC = () => {
             var ts = 0;
             var tps = 0;
             Object.entries(swapList).forEach(([key, swap]) => {
-                const element = document.getElementById("input"+swap.asset.token.address) as HTMLInputElement | null;
-                if (element) {
-                    if (element.checked) {
-                        ts += Number(swap.quote.outAmount)
-                    }
+                if (swap.checked) {
+                    ts += Number(swap.quote.outAmount)
                 }
                 tps += Number(swap.quote.outAmount)
             });
             setPossibleScoop(tps);
             setTotalScoop(ts);
         }
-    }, [swapList]);
+    }, [swapList, forcedCounter]);
 
     if (!jupiterQuoteApi || !walletAddress) {
         return (<></>)
     }
-
     return (
         <>
             <div>
                 <table>
                     <tbody>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Balance</th>
+                        <th>Scoop Value</th>
+                        <th>Strict</th>
+                        <th>Scoop?</th>
+                        <th>Status</th>
+                    </tr>
                     {
                         Object.entries(swapList).map(([key, entry]) => (
                             <tr key={entry.asset.token.address}>
@@ -216,7 +228,8 @@ const AssetList: React.FC = () => {
                                 <th>{entry.asset.balance}</th>
                                 <th>{entry.quote.outAmount}</th>
                                 <th>{entry.asset.token.strict && <p>Strict</p>}</th>
-                                <th><input id={"input"+entry.asset.token.address} type="checkbox"/></th>
+                                <th><input onChange={(change) => {swapList[entry.asset.token.address].checked = change.target.checked; forceUpdate()}} type="checkbox"/></th>
+                                <th>{entry.transactionState && <p>{entry.transactionState}</p>}</th>
                             </tr>
                         ))
                     }
@@ -232,7 +245,7 @@ const AssetList: React.FC = () => {
                         <label>{totalScoop}</label>
                     </div>
                     
-                    <button onClick={scoop}>Scoop</button>
+                    { scooped || <button onClick={scoop}>Scoop</button> }
                 </div>
             </div>
         </>
