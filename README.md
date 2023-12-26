@@ -24,6 +24,5 @@ Note that the homepage is currently set in `package.json` for a development serv
 
 # TODO
 
-   1 Add instruction into each transaction to close the associated token instruction
-   2 (Optional) Implement referrer mechanism _or_ add another instruction to take a referral fee
-   3 _fix UI.........._
+   1(Optional) Implement referrer mechanism _or_ add another instruction to take a referral fee
+   2 _fix UI.........._

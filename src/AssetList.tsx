@@ -7,7 +7,7 @@ import {
   TokenBalance,
   loadJupyterApi
 } from './scooper';
-import { DefaultApi, SwapResponse, QuoteResponse } from '@jup-ag/api';
+import { DefaultApi, SwapInstructionsResponse, QuoteResponse } from '@jup-ag/api';
 
 enum ApplicationStates {
   LOADING = 0,
@@ -20,7 +20,7 @@ enum ApplicationStates {
 class AssetState {
   asset: TokenBalance;
   quote?: QuoteResponse;
-  swap?: SwapResponse;
+  swap?: SwapInstructionsResponse;
   checked?: boolean;
   transactionState?: string;
   transactionId?: string;
@@ -28,7 +28,7 @@ class AssetState {
   constructor(
     assetArg: any,
     quoteArg?: QuoteResponse,
-    swapArg?: SwapResponse,
+    swapArg?: SwapInstructionsResponse,
     checkedArg?: boolean,
     transactionStateArg?: string,
     transactionIdArg?: string
@@ -66,8 +66,6 @@ const AssetList: React.FC = () => {
       return newState;
     });
   }
-
-  var loading = false;
 
   /* Application startup */
   /* 1.a: Load the wallet address */

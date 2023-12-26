@@ -4,12 +4,14 @@ import {
   VersionedTransaction,
   sendAndConfirmRawTransaction,
   PublicKey,
-  TransactionMessage
+  TransactionMessage,
+  TransactionInstruction,
+  AddressLookupTableAccount
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID, NATIVE_MINT, createCloseAccountInstruction } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, createCloseAccountInstruction, TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { Buffer } from 'buffer';
-import { SwapResponse, DefaultApi, QuoteResponse } from '@jup-ag/api';
+import { SwapInstructionsResponse, DefaultApi, QuoteResponse } from '@jup-ag/api';
 
 import {
   QuoteGetRequest,
@@ -29,8 +31,8 @@ interface TokenInfo {
 }
 
 interface Asset {
-  asset: any;
-  swap?: SwapResponse;
+  asset: TokenBalance;
+  swap?: SwapInstructionsResponse;
   checked?: boolean;
 }
 
@@ -82,7 +84,7 @@ async function getTokenAccounts(
     }
   ];
   const accountsNew = await solanaConnection.getParsedProgramAccounts(
-    new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'),
+    TOKEN_2022_PROGRAM_ID,
     { filters: filtersOld }
   );
 
@@ -116,6 +118,29 @@ async function getTokenAccounts(
   return tokens;
 }
 
+async function getAddressLookupTableAccounts(
+  connection: Connection,
+  keys: string[]
+): Promise<AddressLookupTableAccount[]> {
+  const addressLookupTableAccountInfos =
+    await connection.getMultipleAccountsInfo(
+      keys.map((key) => new PublicKey(key))
+    );
+
+  return addressLookupTableAccountInfos.reduce((acc, accountInfo, index) => {
+    const addressLookupTableAddress = keys[index];
+    if (accountInfo) {
+      const addressLookupTableAccount = new AddressLookupTableAccount({
+        key: new PublicKey(addressLookupTableAddress),
+        state: AddressLookupTableAccount.deserialize(accountInfo.data),
+      });
+      acc.push(addressLookupTableAccount);
+    }
+
+    return acc;
+  }, new Array<AddressLookupTableAccount>());
+};
+
 /**
  * Sweeps a set of assets, signing and executing a set of previously determined transactions to swap them into the target currency
  * 
@@ -137,38 +162,60 @@ async function sweepTokens(
 ): Promise<void> {
 
   const transactions: [string, VersionedTransaction][] = [];
-  const blockHash = await (await connection.getLatestBlockhash()).blockhash;
+  const blockhash = await (await connection.getLatestBlockhash()).blockhash;
 
-  assets.forEach((asset) => {
+  await Promise.all(assets.map(async (asset) => {
     if (asset.checked && wallet.publicKey) {
-      if (asset.swap || asset.asset.balance == 0n) {
-          const closeAccountIx = createCloseAccountInstruction(
-            TOKEN_PROGRAM_ID,
-            wallet.publicKey,
-            wallet.publicKey,
-            [] // multisig
-          );
-          const message = new TransactionMessage({
-            payerKey: wallet.publicKey,
-            recentBlockhash: blockHash,
-            instructions: [closeAccountIx],
-          }).compileToV0Message();
-          const closeAccountTx = new VersionedTransaction(message);
-      }
-      
+      var instructions: TransactionInstruction[] = []
+      var lookup = undefined;
       if (asset.swap) {
-        // There has to be a better way to do this....
-        const swapTransactionBuf = atob(asset.swap.swapTransaction);
-        const swapTransactionAr = new Uint8Array(swapTransactionBuf.length);
-        for (let i = 0; i < swapTransactionBuf.length; i++) {
-          swapTransactionAr[i] = swapTransactionBuf.charCodeAt(i);
-        }
+        console.log(asset.swap)
+        instructions.push(
+          new TransactionInstruction({
+            programId: new PublicKey(asset.swap.swapInstruction.programId),
+            keys: asset.swap.swapInstruction.accounts.map((key) => ({
+              pubkey: new PublicKey(key.pubkey),
+              isSigner: key.isSigner,
+              isWritable: key.isWritable,
+            })),
+            data: Buffer.from(asset.swap.swapInstruction.data, "base64"),
+          })
+        );
 
-        const transaction = VersionedTransaction.deserialize(swapTransactionAr);
-        transactions.push([asset.asset.token.address, transaction]);
+        const addressLookupTableAccounts: AddressLookupTableAccount[] = [];
+
+        addressLookupTableAccounts.push(
+          ...(await getAddressLookupTableAccounts(connection, asset.swap.addressLookupTableAddresses))
+        );
+        lookup = addressLookupTableAccounts;
+      }
+
+      if (asset.swap || asset.asset.balance === 0n) {
+        const closeAccountIx = createCloseAccountInstruction(
+          getAssociatedTokenAddressSync(new PublicKey(asset.asset.token.address), wallet.publicKey),
+          wallet.publicKey,
+          wallet.publicKey,
+          [] // multisig
+        );
+        instructions.push(closeAccountIx)
+      }
+
+      if (instructions.length > 0) {
+        const message = new TransactionMessage({
+          payerKey: wallet.publicKey,
+          recentBlockhash: blockhash,
+          instructions: instructions,
+        }).compileToV0Message(lookup);
+        const tx = new VersionedTransaction(message)
+        console.log("Created transaction")
+        console.log(tx)
+        transactions.push([asset.asset.token.address, tx]); // TODO: Add lookup table back!
       }
     }
-  });
+  }));
+
+  console.log("Transactions")
+  console.log(transactions)
 
   if (wallet.signAllTransactions) {
     try {
@@ -193,6 +240,7 @@ async function sweepTokens(
             );
             console.log('Transaction Success!');
             transactionStateCallback(assetId, 'Scooped');
+            transactionIdCallback(assetId, result);
           } catch (err) {
             console.log('Transaction failed!');
             console.log(err);
@@ -231,7 +279,7 @@ async function findQuotes(
   quoteApi: DefaultApi,
   foundAssetCallback: (id: string, asset: TokenBalance) => void,
   foundQuoteCallback: (id: string, quote: QuoteResponse) => void,
-  foundSwapCallback: (id: string, swap: SwapResponse) => void,
+  foundSwapCallback: (id: string, swap: SwapInstructionsResponse) => void,
   errorCallback: (id: string, err: string) => void
 ): Promise<void> {
   try {
@@ -263,7 +311,7 @@ async function findQuotes(
           };
 
           try {
-            const swap = await quoteApi.swapPost(rq);
+            const swap = await quoteApi.swapInstructionsPost(rq);
             foundSwapCallback(asset.token.address, swap);
           } catch (swapErr) {
             console.log(`Failed to get swap for ${asset.token.symbol}`);
@@ -282,7 +330,6 @@ async function findQuotes(
   }
 }
 
-/* Load Jupyter API and tokens */
 /**
  * Load Jupyter API and tokens
  * 
