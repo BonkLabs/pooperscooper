@@ -1,265 +1,241 @@
-import React from "react";
+import React from 'react';
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import {
-    useAnchorWallet,
-    useConnection,
-    useWallet,
-    WalletContextState,
-} from '@solana/wallet-adapter-react';
-import { Connection, GetProgramAccountsFilter, TransactionInstruction, VersionedTransaction, sendAndConfirmRawTransaction, PublicKey } from "@solana/web3.js";
-import { isBurnInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { createJupiterApiClient, DefaultApi, QuoteGetRequest, SwapResponse, SwapPostRequest, QuoteResponse } from '@jup-ag/api';
-import { Buffer } from 'buffer';
+  sweepTokens,
+  findQuotes,
+  Token,
+  TokenBalance,
+  loadJupyterApi
+} from './scooper';
+import { DefaultApi, SwapResponse, QuoteResponse } from '@jup-ag/api';
 
-interface Token {
-    address: string;
-    chainId: number;
-    decimals: number;
-    name: string;
-    symbol: string;
-    logoURI: string;
-    tags: string[];
-    strict?: boolean;
-};
+enum ApplicationStates {
+  LOADING = 0,
+  LOADED_JUPYTER = 1,
+  LOADED_QUOTES = 2,
+  SCOOPING = 3,
+  SCOOPED = 4
+}
 
-/* Fetch all the token accounts for a wallet */
-async function getTokenAccounts(wallet: string, solanaConnection: Connection, tokenList: { [id: string] : Token; }) {
-    const filters:GetProgramAccountsFilter[] = [
-        {
-          dataSize: 165,
-        },
-        {
-          memcmp: {
-            offset: 32,
-            bytes: wallet,
-          },            
-        }];
-    const accountsOld = await solanaConnection.getParsedProgramAccounts(
-        TOKEN_PROGRAM_ID,
-        {filters: filters}
-    );
-    const filtersOld:GetProgramAccountsFilter[] = [
-        {
-          dataSize: 182,
-        },
-        {
-          memcmp: {
-            offset: 32,
-            bytes: wallet,
-          },            
-        }];
-    const accountsNew = await solanaConnection.getParsedProgramAccounts(
-        new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"),
-        {filters: filtersOld}
-    );
+class AssetState {
+  asset: TokenBalance;
+  quote?: QuoteResponse;
+  swap?: SwapResponse;
+  checked?: boolean;
+  transactionState?: string;
+  transactionId?: string;
 
-    const accounts = [...accountsOld, ...accountsNew];
-    
-    console.log(`Found ${accounts.length} token account(s) for wallet ${wallet}.`);
-    var tokens : {account: any, token: any, balance: any}[] = [];
-
-    accounts.forEach((account, i) => {
-        const parsedAccountInfo: any = account.account.data;
-        console.log(parsedAccountInfo)
-        const mintAddress: string = parsedAccountInfo["parsed"]["info"]["mint"];
-        const tokenBalance: number = parsedAccountInfo["parsed"]["info"]["tokenAmount"]["uiAmount"];
-        if (tokenList[mintAddress]) {
-            console.log("Recognised token: " + tokenList[mintAddress].symbol + " have: " + tokenBalance.toString())
-            tokens.push({account: account, token: tokenList[mintAddress], balance: tokenBalance.toString()})
-        }
-    });
-    return tokens;
+  constructor(
+    assetArg: any,
+    quoteArg?: QuoteResponse,
+    swapArg?: SwapResponse,
+    checkedArg?: boolean,
+    transactionStateArg?: string,
+    transactionIdArg?: string
+  ) {
+    this.asset = assetArg;
+    this.quote = quoteArg;
+    this.swap = swapArg;
+    this.checked = checkedArg;
+    this.transactionState = transactionStateArg;
+    this.transactionId = transactionIdArg;
+  }
 }
 
 const AssetList: React.FC = () => {
-    const { connection } = useConnection();
-    const wallet = useWallet();
-    const [swapList, setSwapList] = React.useState<{ [id: string] : {asset: any, quote: QuoteResponse, swap: SwapResponse, checked: boolean, transactionState?: string}}>({});
-    const [walletAddress, setWalletAddress] = React.useState("");
-    const [tokens, setTokens] = React.useState<{ [id: string] : Token; }>({});
-    const [totalScoop, setTotalScoop] = React.useState(0);
-    const [possibleScoop, setPossibleScoop] = React.useState(0);
-    const [forcedCounter, setForcedCounter] = React.useState(0);
-    const [scooped, setScooped] = React.useState(false);
+  const { connection } = useConnection();
+  const wallet = useWallet();
+  const [assetList, setAssetList] = React.useState<{
+    [id: string]: AssetState;
+  }>({});
+  const [walletAddress, setWalletAddress] = React.useState('');
+  const [tokens, setTokens] = React.useState<{ [id: string]: Token }>({});
+  const [state, setState] = React.useState<ApplicationStates>(
+    ApplicationStates.LOADING
+  );
 
-    function forceUpdate() {
-        setForcedCounter(s => (s+1));
+  function updateAssetList(
+    updater: (arg: { [id: string]: AssetState }) => { [id: string]: AssetState }
+  ) {
+    setAssetList((aL) => {
+      console.log('Old state:');
+      console.log(assetList);
+      let newState = updater({ ...aL });
+      console.log('New state:');
+      console.log(newState);
+      return newState;
+    });
+  }
+
+  var loading = false;
+
+  /* Application startup */
+  /* 1.a: Load the wallet address */
+  if (wallet.connected && wallet.publicKey && connection) {
+    if (walletAddress != wallet.publicKey.toString()) {
+      setWalletAddress(wallet.publicKey.toString());
     }
+  }
 
-    var loading = false;
+  /* 1.b: Load the Jupiter Quote API */
+  const [jupiterQuoteApi, setQuoteApi] = React.useState<DefaultApi | null>();
+  React.useEffect(() => {
+    loadJupyterApi().then(([quoteApi, tokenMap]) => {
+      setTokens(tokenMap);
+      setQuoteApi(quoteApi);
+    });
+  }, []);
 
-    /* Scoop all the selected tokens */
-    const scoop = () => {
-        setScooped(true)
-        let transactions: [string, VersionedTransaction][] = [];
-        Object.entries(swapList).forEach(([key, swap]) => {
-            if (swap.checked) {
-                // deserialize the transaction
-                const swapTransactionBuf = atob(swap.swap.swapTransaction);
-                const swapTransactionAr = new Uint8Array(swapTransactionBuf.length);
-
-                for (let i = 0; i < swapTransactionBuf.length; i++) {
-                    swapTransactionAr[i] = swapTransactionBuf.charCodeAt(i);
-                }
-                var transaction = VersionedTransaction.deserialize(swapTransactionAr);
-                transactions.push([swap.asset.token.address, transaction]);
-            }
-        });
-        if (wallet.signAllTransactions) {
-            wallet.signAllTransactions(transactions.map(([id, transaction]) => transaction)).then( signedTransactions => {
-                console.log("Signed transactions:")
-                console.log(signedTransactions)
-                console.log(transactions)
-
-                signedTransactions.forEach((transaction, i) => {
-                    swapList[transactions[i][0]].transactionState = "Scooping"
-                    forceUpdate()
-                    sendAndConfirmRawTransaction(connection, Buffer.from(transaction.serialize()), {}).then( result => {
-                        console.log("Transaction Success!")
-                        swapList[transactions[i][0]].transactionState = "Scooped"
-                        forceUpdate()
-                    }).catch( err => {
-                        console.log("Transaction failed!")
-                        console.log(err)
-                        swapList[transactions[i][0]].transactionState = "Failed to scoop"
-                        forceUpdate()
-                    })
-                });
-            });
-        }
+  /* 2: Load information about users tokens, add any tokens which are eligible for swap to list */
+  React.useEffect(() => {
+    // Run only once
+    if (
+      walletAddress &&
+      jupiterQuoteApi &&
+      tokens &&
+      state == ApplicationStates.LOADING
+    ) {
+      setState(ApplicationStates.LOADED_JUPYTER);
+      setAssetList({});
+      findQuotes(
+        connection,
+        tokens,
+        'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
+        walletAddress,
+        jupiterQuoteApi,
+        (id, asset) => {
+          updateAssetList((s) => ({ ...s, [id]: new AssetState(asset) }));
+        },
+        (id, quote) => {
+          updateAssetList((aL) => {
+            aL[id].quote = quote;
+            return aL;
+          });
+        },
+        (id, swap) => {
+          updateAssetList((aL) => {
+            aL[id].swap = swap;
+            return aL;
+          });
+        },
+        (id, error) => {}
+      ).then(() => {
+        setState(ApplicationStates.LOADED_QUOTES);
+      });
     }
+  }, [walletAddress, jupiterQuoteApi, tokens]);
+  /* End application startup */
 
-    /* Set the wallet address once until it changes */
-    if (wallet.connected && wallet.publicKey && connection) {
-        if ( walletAddress != wallet.publicKey.toString() ) {
-            setWalletAddress(wallet.publicKey.toString())
-        }
+  /* Scoop button callback, clean all the tokens! */
+  const scoop = () => {
+    // Run only once
+    if (state == ApplicationStates.LOADED_QUOTES) {
+      setState(ApplicationStates.SCOOPING);
+      sweepTokens(
+        wallet,
+        connection,
+        Object.values(assetList),
+        (id: string, state: string) => {
+          updateAssetList((aL) => {
+            assetList[id].transactionState = state;
+            return aL;
+          });
+        },
+        (id, txid) => {},
+        (id, error) => {}
+      ).then(() => {
+        setState(ApplicationStates.SCOOPED);
+      });
     }
+  };
 
-    /* Load the Jupiter Quote API */
-    const [jupiterQuoteApi, setQuoteApi] = React.useState<DefaultApi|null>()
-    React.useEffect(() => {
-        let quoteApi = createJupiterApiClient();
-        fetch("https://token.jup.ag/all").then( data => {
-            data.json().then( allList => { 
-                const tokenMap: {[id: string] : Token} = {};
-                allList.forEach((token: Token) => {
-                    tokenMap[token.address] = token
-                })
-                fetch("https://token.jup.ag/strict").then( data => {
-                    data.json().then( strictList => { 
-                        strictList.forEach((token: Token) => {
-                            tokenMap[token.address].strict = true;
-                        })
-                        setTokens(tokenMap);
-                        setQuoteApi(quoteApi);
-                    })
-                });
-            })
-        })
-    }, [])
+  /* Maintain counters of the total possible yield and yield from selected swaps */
+  var totalPossibleScoop = 0;
+  var totalScoop = 0;
 
-    /* Load information about users tokens, add any tokens which are eligible for swap to list */
-    React.useEffect(() => {
-        if (walletAddress && jupiterQuoteApi && tokens && !loading) {
-            loading = true;
-            setSwapList({})
-            getTokenAccounts(walletAddress, connection, tokens).then((assets) => {
-                assets.forEach(asset => {
-                    const quoteRequest : QuoteGetRequest = {
-                        inputMint: asset.token.address,
-                        outputMint: "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
-                        amount: Math.floor(asset.balance * Math.pow(10, asset.token.decimals)),
-                        onlyDirectRoutes: false,
-                        asLegacyTransaction: false,
-                        platformFeeBps: 100
-                    }
-                    console.log(quoteRequest)
+  Object.entries(assetList).forEach(([key, asset]) => {
+    if (asset.quote) {
+      if (asset.checked) {
+        totalScoop += Number(asset.quote.outAmount);
+      }
+      totalPossibleScoop += Number(asset.quote.outAmount);
+    }
+  });
 
-                    jupiterQuoteApi.quoteGet(quoteRequest).then( quote => {
-                        let rq : SwapPostRequest = {
-                            swapRequest: {
-                                userPublicKey: walletAddress,
-                                quoteResponse: quote
-                            }
-                        }
-                        jupiterQuoteApi.swapPost(rq).then( swap => {
-                            setSwapList(s => ({...s, [asset.token.address]: {asset: asset, quote: quote, swap: swap, checked: false}}))
-                        }).catch( err => {
-                            console.log("Failed to get swap for " + asset.token.symbol)
-                            console.log(err)
+  if (!jupiterQuoteApi || !walletAddress) {
+    return <></>;
+  }
+  return (
+    <>
+      {' '}
+      <div>
+        <div> </div>
+        <div
+          className="NormalText"
+          style={{
+            position: 'absolute',
+            top: '340px',
+            left: '10vw',
+            width: '80vw',
+            justifyContent: 'center'
+          }}
+        >
+          <table style={{ height: '70%', width: '80vw' }}>
+            <tbody>
+              <tr>
+                <th>Symbol</th>
+                <th>Balance</th>
+                <th>Scoop Value</th>
+                <th>Strict</th>
+                <th>Scoop?</th>
+                <th>Status</th>
+              </tr>
+              {Object.entries(assetList).map(([key, entry]) => (
+                <tr key={entry.asset.token.address}>
+                  <td>{entry.asset.token.symbol}</td>
+                  <td>{Number(entry.asset?.balance)}</td>
+                  <td>{entry.quote?.outAmount || 'No quote'}</td>
+                  <td>{entry.asset?.token.strict && <p>Strict</p>}</td>
+                  <td>
+                    <input
+                      onChange={(change) => {
+                        updateAssetList((aL) => {
+                          aL[entry.asset?.token.address].checked =
+                            change.target.checked;
+                          return aL;
                         });
-                    }).catch( err => {
-                        console.log("Failed to get quote for " + asset.token.symbol)
-                        console.log(err)
-                    });
-                });
-            });
-        }
-    }, [walletAddress, jupiterQuoteApi, tokens]);
-
-    /* Maintain counters of the total possible yield and yield from selected swaps */
-    React.useEffect(() => {
-        if (walletAddress && jupiterQuoteApi && tokens) {
-            var ts = 0;
-            var tps = 0;
-            Object.entries(swapList).forEach(([key, swap]) => {
-                if (swap.checked) {
-                    ts += Number(swap.quote.outAmount)
-                }
-                tps += Number(swap.quote.outAmount)
-            });
-            setPossibleScoop(tps);
-            setTotalScoop(ts);
-        }
-    }, [swapList, forcedCounter]);
-
-    if (!jupiterQuoteApi || !walletAddress) {
-        return (<></>)
-    }
-    return (
-        <>  <div>
-                <div> </div>
-                <div className="NormalText" style={{position: "absolute", top: "340px", left: "0px"}} >
-                    <table style={{ height: "70%"}}>
-                        <tbody>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>Balance</th>
-                            <th>Scoop Value</th>
-                            <th>Strict</th>
-                            <th>Scoop?</th>
-                            <th>Status</th>
-                        </tr>
-                        {
-                            Object.entries(swapList).map(([key, entry]) => (
-                                <tr key={entry.asset.token.address} style={{background: {rgba(255, 255, 255, 0.541)}}}>
-                                    <td>{entry.asset.token.symbol}</td>
-                                    <td>{entry.asset.balance}</td>
-                                    <td>{entry.quote.outAmount}</td>
-                                    <td>{entry.asset.token.strict && <p>Strict</p>}</td>
-                                    <td><input onChange={(change) => {swapList[entry.asset.token.address].checked = change.target.checked; forceUpdate()}} type="checkbox" disabled={scooped}/></td>
-                                    <td>{entry.transactionState && <p>{entry.transactionState}</p>}</td>
-                                </tr>
-                            ))
-                        }
-                        </tbody> 
-                    </table>
-                    <div>
-                        <div>
-                            <label>Possible Scoop:</label>
-                            <label>{possibleScoop}</label>
-                        </div>
-                        <div>
-                            <label>Total Scoop:</label>
-                            <label>{totalScoop}</label>
-                        </div>
-                        
-                        { scooped || <button className="NormalText" onClick={scoop}>Scoop</button> }
-                    </div>
-                </div>
+                      }}
+                      type="checkbox"
+                      disabled={state != ApplicationStates.LOADED_QUOTES}
+                    />
+                  </td>
+                  <td>
+                    {entry.transactionState && <p>{entry.transactionState}</p>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div>
+            <div>
+              <label>Possible Scoop:</label>
+              <label>{totalPossibleScoop}</label>
             </div>
-        </>
-    );
+            <div>
+              <label>Total Scoop:</label>
+              <label>{totalScoop}</label>
+            </div>
+
+            {state == ApplicationStates.LOADED_QUOTES && (
+              <button className="NormalText" onClick={scoop}>
+                Scoop
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
 };
 
 export default AssetList;
