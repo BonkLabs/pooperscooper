@@ -3,7 +3,7 @@ import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import {
   sweepTokens,
   findQuotes,
-  Token,
+  TokenInfo,
   TokenBalance,
   loadJupyterApi
 } from './scooper';
@@ -49,7 +49,7 @@ const AssetList: React.FC = () => {
     [id: string]: AssetState;
   }>({});
   const [walletAddress, setWalletAddress] = React.useState('');
-  const [tokens, setTokens] = React.useState<{ [id: string]: Token }>({});
+  const [tokens, setTokens] = React.useState<{ [id: string]: TokenInfo }>({});
   const [state, setState] = React.useState<ApplicationStates>(
     ApplicationStates.LOADING
   );
@@ -86,7 +86,7 @@ const AssetList: React.FC = () => {
     });
   }, []);
 
-  /* 2: Load information about users tokens, add any tokens which are eligible for swap to list */
+  /* 2: Load information about users tokens, add any tokens to list */
   React.useEffect(() => {
     // Run only once
     if (
@@ -193,7 +193,7 @@ const AssetList: React.FC = () => {
               {Object.entries(assetList).map(([key, entry]) => (
                 <tr key={entry.asset.token.address}>
                   <td>{entry.asset.token.symbol}</td>
-                  <td>{Number(entry.asset?.balance)}</td>
+                  <td>{Number(entry.asset?.balance) / 10 ** entry.asset.token.decimals}</td>
                   <td>{entry.quote?.outAmount || 'No quote'}</td>
                   <td>{entry.asset?.token.strict && <p>Strict</p>}</td>
                   <td>
