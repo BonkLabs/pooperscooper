@@ -118,6 +118,18 @@ async function getTokenAccounts(
   return tokens;
 }
 
+const deserializeInstruction = (instruction : any) => {
+  return new TransactionInstruction({
+    programId: new PublicKey(instruction.programId),
+    keys: instruction.accounts.map((key : any) => ({
+      pubkey: new PublicKey(key.pubkey),
+      isSigner: key.isSigner,
+      isWritable: key.isWritable,
+    })),
+    data: Buffer.from(instruction.data, "base64"),
+  });
+};
+
 async function getAddressLookupTableAccounts(
   connection: Connection,
   keys: string[]
@@ -170,16 +182,26 @@ async function sweepTokens(
       var lookup = undefined;
       if (asset.swap) {
         console.log(asset.swap)
+        asset.swap.computeBudgetInstructions.forEach( computeIx => {
+          if (!asset.swap) {
+            return;
+          }
+          instructions.push(
+            deserializeInstruction(computeIx)
+          );
+        })
+
+        asset.swap.setupInstructions.forEach( setupIx => {
+          if (!asset.swap) {
+            return;
+          }
+          instructions.push(
+            deserializeInstruction(setupIx)
+          );
+        })
+
         instructions.push(
-          new TransactionInstruction({
-            programId: new PublicKey(asset.swap.swapInstruction.programId),
-            keys: asset.swap.swapInstruction.accounts.map((key) => ({
-              pubkey: new PublicKey(key.pubkey),
-              isSigner: key.isSigner,
-              isWritable: key.isWritable,
-            })),
-            data: Buffer.from(asset.swap.swapInstruction.data, "base64"),
-          })
+          deserializeInstruction(asset.swap.swapInstruction)
         );
 
         const addressLookupTableAccounts: AddressLookupTableAccount[] = [];
@@ -190,7 +212,10 @@ async function sweepTokens(
         lookup = addressLookupTableAccounts;
       }
 
-      if (asset.swap || asset.asset.balance === 0n) {
+      if ((asset.swap || asset.asset.balance === 0n) && !(asset.asset.token.tags.includes("token-2022"))) {
+        console.log("Adding closeAccountInstruction")
+        console.log(asset)
+        console.log(asset.asset.token.tags.includes("token-22"))
         const closeAccountIx = createCloseAccountInstruction(
           getAssociatedTokenAddressSync(new PublicKey(asset.asset.token.address), wallet.publicKey),
           wallet.publicKey,
@@ -209,7 +234,7 @@ async function sweepTokens(
         const tx = new VersionedTransaction(message)
         console.log("Created transaction")
         console.log(tx)
-        transactions.push([asset.asset.token.address, tx]); // TODO: Add lookup table back!
+        transactions.push([asset.asset.token.address, tx]);
       }
     }
   }));
