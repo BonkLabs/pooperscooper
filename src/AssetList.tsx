@@ -192,7 +192,7 @@ const AssetList: React.FC = () => {
                 <tr key={entry.asset.token.address}>
                   <td>{entry.asset.token.symbol}</td>
                   <td>{Number(entry.asset?.balance) / 10 ** entry.asset.token.decimals}</td>
-                  <td>{entry.quote?.outAmount || 'No quote'}</td>
+                  <td>{Number(entry.quote?.outAmount) / 10 ** 5 || 'No quote'}</td>
                   <td>{entry.asset?.token.strict && <p>Strict</p>}</td>
                   <td>
                     <input
@@ -217,11 +217,11 @@ const AssetList: React.FC = () => {
           <div>
             <div>
               <label>Possible Scoop:</label>
-              <label>{totalPossibleScoop}</label>
+              <label>{totalPossibleScoop / 10 ** 5}</label>
             </div>
             <div>
               <label>Total Scoop:</label>
-              <label>{totalScoop}</label>
+              <label>{totalScoop / 10 ** 5}</label>
             </div>
 
             {state == ApplicationStates.LOADED_QUOTES && (
