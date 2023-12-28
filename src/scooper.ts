@@ -6,12 +6,22 @@ import {
   PublicKey,
   TransactionMessage,
   TransactionInstruction,
-  AddressLookupTableAccount,
+  AddressLookupTableAccount
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, createCloseAccountInstruction, TOKEN_2022_PROGRAM_ID, createHarvestWithheldTokensToMintInstruction, createBurnInstruction } from '@solana/spl-token';
+import {
+  TOKEN_PROGRAM_ID,
+  createCloseAccountInstruction,
+  TOKEN_2022_PROGRAM_ID,
+  createHarvestWithheldTokensToMintInstruction,
+  createBurnInstruction
+} from '@solana/spl-token';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { Buffer } from 'buffer';
-import { SwapInstructionsResponse, DefaultApi, QuoteResponse } from '@jup-ag/api';
+import {
+  SwapInstructionsResponse,
+  DefaultApi,
+  QuoteResponse
+} from '@jup-ag/api';
 
 import {
   QuoteGetRequest,
@@ -48,7 +58,7 @@ interface TokenBalance {
  * Gets token accounts including standard and token22 accounts
  *
  * Returns a list of all token accounts which match a "known" token in tokenList
- * 
+ *
  * @param wallet - The users public key as a string
  * @param connection - The connection to use
  * @param tokenList - List of all known tokens
@@ -96,26 +106,30 @@ async function getTokenAccounts(
   var tokens: TokenBalance[] = [];
 
   accountsOld.forEach((account, i) => {
-    console.log(account)
+    console.log(account);
     const parsedAccountInfo: any = account.account.data;
     const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
     if (tokenList[mintAddress]) {
       tokens.push({
         token: tokenList[mintAddress],
-        balance: BigInt(parsedAccountInfo['parsed']['info']['tokenAmount']['amount']),
+        balance: BigInt(
+          parsedAccountInfo['parsed']['info']['tokenAmount']['amount']
+        ),
         programId: TOKEN_PROGRAM_ID,
         ataId: account.pubkey
       });
     }
   });
   accountsNew.forEach((account, i) => {
-    console.log(account)
+    console.log(account);
     const parsedAccountInfo: any = account.account.data;
     const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
     if (tokenList[mintAddress]) {
       tokens.push({
         token: tokenList[mintAddress],
-        balance: BigInt(parsedAccountInfo['parsed']['info']['tokenAmount']['amount']),
+        balance: BigInt(
+          parsedAccountInfo['parsed']['info']['tokenAmount']['amount']
+        ),
         programId: TOKEN_2022_PROGRAM_ID,
         ataId: account.pubkey
       });
@@ -125,15 +139,15 @@ async function getTokenAccounts(
   return tokens;
 }
 
-const deserializeInstruction = (instruction : any) => {
+const deserializeInstruction = (instruction: any) => {
   return new TransactionInstruction({
     programId: new PublicKey(instruction.programId),
-    keys: instruction.accounts.map((key : any) => ({
+    keys: instruction.accounts.map((key: any) => ({
       pubkey: new PublicKey(key.pubkey),
       isSigner: key.isSigner,
-      isWritable: key.isWritable,
+      isWritable: key.isWritable
     })),
-    data: Buffer.from(instruction.data, "base64"),
+    data: Buffer.from(instruction.data, 'base64')
   });
 };
 
@@ -151,18 +165,122 @@ async function getAddressLookupTableAccounts(
     if (accountInfo) {
       const addressLookupTableAccount = new AddressLookupTableAccount({
         key: new PublicKey(addressLookupTableAddress),
-        state: AddressLookupTableAccount.deserialize(accountInfo.data),
+        state: AddressLookupTableAccount.deserialize(accountInfo.data)
       });
       acc.push(addressLookupTableAccount);
     }
 
     return acc;
   }, new Array<AddressLookupTableAccount>());
-};
+}
+
+/**
+ * Builds a transaction which includes:
+ *  Swap instruction + supporting instructions if a swap is present
+ *  Burn Tokens/Harvest witheld to mint if a swap is using token 2022 standard
+ *  Close account instruction
+ *
+ * Note that this function can be slow as it must `getAddressLookupTableAccounts` which involves fetching on chain data
+ *
+ * @param wallet - The users public key as a string
+ * @param connection - The connection to use
+ * @param blockhash - Recent blockhash to use in making transaction
+ * @param asset - The asset to build a transaction for
+ * @returns Transaction if there are any instructions to execute, else null
+ */
+async function buildBurnTransaction(
+  wallet: WalletContextState,
+  connection: Connection,
+  blockhash: string,
+  asset: Asset
+): Promise<VersionedTransaction | null> {
+  if (asset.checked && wallet.publicKey) {
+    var instructions: TransactionInstruction[] = [];
+    var lookup = undefined;
+    if (asset.swap) {
+      console.log(asset.swap);
+      asset.swap.computeBudgetInstructions.forEach((computeIx) => {
+        if (!asset.swap) {
+          return;
+        }
+        instructions.push(deserializeInstruction(computeIx));
+      });
+
+      asset.swap.setupInstructions.forEach((setupIx) => {
+        if (!asset.swap) {
+          return;
+        }
+        instructions.push(deserializeInstruction(setupIx));
+      });
+
+      instructions.push(deserializeInstruction(asset.swap.swapInstruction));
+
+      const addressLookupTableAccounts: AddressLookupTableAccount[] = [];
+
+      addressLookupTableAccounts.push(
+        ...(await getAddressLookupTableAccounts(
+          connection,
+          asset.swap.addressLookupTableAddresses
+        ))
+      );
+      lookup = addressLookupTableAccounts;
+    }
+
+    if (asset.asset.programId == TOKEN_2022_PROGRAM_ID) {
+      console.log('Adding burn instruction');
+      let burnAmount;
+      if (asset.quote) {
+        burnAmount = asset.asset.balance - BigInt(asset.quote.inAmount);
+      } else {
+        burnAmount = asset.asset.balance;
+      }
+
+      const burnIx = createBurnInstruction(
+        asset.asset.ataId,
+        new PublicKey(asset.asset.token.address),
+        wallet.publicKey,
+        burnAmount,
+        [],
+        TOKEN_2022_PROGRAM_ID
+      );
+      instructions.push(burnIx);
+      console.log('Adding harvest instruction');
+      const harvestFeesIx = createHarvestWithheldTokensToMintInstruction(
+        new PublicKey(asset.asset.token.address),
+        [asset.asset.ataId],
+        TOKEN_2022_PROGRAM_ID
+      );
+      instructions.push(harvestFeesIx);
+    }
+    console.log('Adding closeAccountInstruction');
+    const closeAccountIx = createCloseAccountInstruction(
+      asset.asset.ataId,
+      wallet.publicKey,
+      wallet.publicKey,
+      [],
+      asset.asset.programId
+    );
+    instructions.push(closeAccountIx);
+
+    console.log(instructions);
+    if (instructions.length > 0) {
+      const message = new TransactionMessage({
+        payerKey: wallet.publicKey,
+        recentBlockhash: blockhash,
+        instructions: instructions
+      }).compileToV0Message(lookup);
+      const tx = new VersionedTransaction(message);
+      console.log('Created transaction');
+      console.log(tx);
+      return tx;
+    }
+  }
+  return null;
+}
 
 /**
  * Sweeps a set of assets, signing and executing a set of previously determined transactions to swap them into the target currency
- * 
+ *
  * @param wallet - The users public key as a string
  * @param connection - The connection to use
  * @param assets - List of the assets to be swept
@@ -179,99 +297,25 @@ async function sweepTokens(
   transactionIdCallback: (id: string, txid: string) => void,
   errorCallback: (id: string, error: any) => void
 ): Promise<void> {
-
   const transactions: [string, VersionedTransaction][] = [];
   const blockhash = await (await connection.getLatestBlockhash()).blockhash;
 
-  await Promise.all(assets.map(async (asset) => {
-    if (asset.checked && wallet.publicKey) {
-      var instructions: TransactionInstruction[] = [];
-      var lookup = undefined;
-      if (asset.swap) {
-        console.log(asset.swap)
-        asset.swap.computeBudgetInstructions.forEach( computeIx => {
-          if (!asset.swap) {
-            return;
-          }
-          instructions.push(
-            deserializeInstruction(computeIx)
-          );
-        })
-
-        asset.swap.setupInstructions.forEach( setupIx => {
-          if (!asset.swap) {
-            return;
-          }
-          instructions.push(
-            deserializeInstruction(setupIx)
-          );
-        })
-
-        instructions.push(
-          deserializeInstruction(asset.swap.swapInstruction)
-        );
-
-        const addressLookupTableAccounts: AddressLookupTableAccount[] = [];
-
-        addressLookupTableAccounts.push(
-          ...(await getAddressLookupTableAccounts(connection, asset.swap.addressLookupTableAddresses))
-        );
-        lookup = addressLookupTableAccounts;
-      }
-
-      if (asset.asset.programId == TOKEN_2022_PROGRAM_ID) {
-        console.log("Adding burn instruction")
-        let burnAmount;
-        if (asset.quote) {
-          burnAmount = asset.asset.balance - BigInt(asset.quote.inAmount)
-        } else {
-          burnAmount = asset.asset.balance;
-        }
-
-        const burnIx = createBurnInstruction(
-          asset.asset.ataId,
-          new PublicKey(asset.asset.token.address),
-          wallet.publicKey,
-          burnAmount,
-          [],
-          TOKEN_2022_PROGRAM_ID
-        );
-        instructions.push(burnIx)
-        console.log("Adding harvest instruction")
-        const harvestFeesIx = createHarvestWithheldTokensToMintInstruction(
-          new PublicKey(asset.asset.token.address),
-          [asset.asset.ataId],
-          TOKEN_2022_PROGRAM_ID
-        )
-        instructions.push(harvestFeesIx)
-      }
-      console.log("Adding closeAccountInstruction")
-      const closeAccountIx = createCloseAccountInstruction(
-        asset.asset.ataId,
-        wallet.publicKey,
-        wallet.publicKey,
-        [],
-        asset.asset.programId
+  await Promise.all(
+    assets.map(async (asset) => {
+      const tx = await buildBurnTransaction(
+        wallet,
+        connection,
+        blockhash,
+        asset
       );
-      instructions.push(closeAccountIx)
-
-        console.log(instructions)
-      if (instructions.length > 0) {
-        const message = new TransactionMessage({
-          payerKey: wallet.publicKey,
-          recentBlockhash: blockhash,
-          instructions: instructions,
-        }).compileToV0Message(lookup);
-        const tx = new VersionedTransaction(message)
-        console.log("Created transaction")
-        console.log(tx)
+      if (tx) {
         transactions.push([asset.asset.token.address, tx]);
       }
-    }
-  }));
+    })
+  );
 
-  console.log("Transactions")
-  console.log(transactions)
+  console.log('Transactions');
+  console.log(transactions);
 
   if (wallet.signAllTransactions) {
     try {
@@ -315,7 +359,7 @@ async function sweepTokens(
 
 /**
  * Get quotes and transaction data to swap input currencies into output currency
- * 
+ *
  * @param connection - The connection to use
  * @param tokens - The tokens to seek quotes for
  * @param outputMint - The Mint for the output currency
@@ -338,57 +382,53 @@ async function findQuotes(
   foundSwapCallback: (id: string, swap: SwapInstructionsResponse) => void,
   errorCallback: (id: string, err: string) => void
 ): Promise<void> {
-  try {
-    const assets = await getTokenAccounts(walletAddress, connection, tokens);
+  const assets = await getTokenAccounts(walletAddress, connection, tokens);
 
-    await Promise.all(
-      assets.map(async (asset) => {
-        console.log('Found asset');
-        console.log(asset);
-        foundAssetCallback(asset.token.address, asset);
+  await Promise.all(
+    assets.map(async (asset) => {
+      console.log('Found asset');
+      console.log(asset);
+      foundAssetCallback(asset.token.address, asset);
 
-        const quoteRequest: QuoteGetRequest = {
-          inputMint: asset.token.address,
-          outputMint: outputMint,
-          amount: Number(asset.balance) // Casting this to number can discard precision...
+      const quoteRequest: QuoteGetRequest = {
+        inputMint: asset.token.address,
+        outputMint: outputMint,
+        amount: Number(asset.balance) // Casting this to number can discard precision...
+      };
+
+      console.log(quoteRequest);
+
+      try {
+        const quote = await quoteApi.quoteGet(quoteRequest);
+        foundQuoteCallback(asset.token.address, quote);
+
+        const rq: SwapPostRequest = {
+          swapRequest: {
+            userPublicKey: walletAddress,
+            quoteResponse: quote
+          }
         };
 
-        console.log(quoteRequest);
-
         try {
-          const quote = await quoteApi.quoteGet(quoteRequest);
-          foundQuoteCallback(asset.token.address, quote);
-
-          const rq: SwapPostRequest = {
-            swapRequest: {
-              userPublicKey: walletAddress,
-              quoteResponse: quote
-            }
-          };
-
-          try {
-            const swap = await quoteApi.swapInstructionsPost(rq);
-            foundSwapCallback(asset.token.address, swap);
-          } catch (swapErr) {
-            console.log(`Failed to get swap for ${asset.token.symbol}`);
-            console.log(swapErr);
-            errorCallback(asset.token.address, "Couldn't get swap transaction");
-          }
-        } catch (quoteErr) {
-          console.log(`Failed to get quote for ${asset.token.symbol}`);
-          console.log(quoteErr);
-          errorCallback(asset.token.address, "Couldn't get quote");
+          const swap = await quoteApi.swapInstructionsPost(rq);
+          foundSwapCallback(asset.token.address, swap);
+        } catch (swapErr) {
+          console.log(`Failed to get swap for ${asset.token.symbol}`);
+          console.log(swapErr);
+          errorCallback(asset.token.address, "Couldn't get swap transaction");
         }
-      })
-    );
-  } catch (error) {
-    console.error('An error occurred:', error);
-  }
+      } catch (quoteErr) {
+        console.log(`Failed to get quote for ${asset.token.symbol}`);
+        console.log(quoteErr);
+        errorCallback(asset.token.address, "Couldn't get quote");
+      }
+    })
+  );
 }
 
 /**
  * Load Jupyter API and tokens
- * 
+ *
  * @returns [instance of Jupiter API, map of known token types by mint address]
  */
 async function loadJupyterApi(): Promise<
