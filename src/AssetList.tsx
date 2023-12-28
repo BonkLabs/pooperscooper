@@ -171,15 +171,15 @@ const AssetList: React.FC = () => {
     <>
       {' '}
       <div>
-        <div> </div>
         <div
           className="NormalText"
           style={{
             position: 'absolute',
-            top: '340px',
+            top: '320px',
             left: '10vw',
             width: '80vw',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            bottom: '5vh'
           }}
         >
           <table style={{ height: '70%', width: '80vw' }}>
@@ -239,6 +239,34 @@ const AssetList: React.FC = () => {
               </button>
             )}
           </div>
+        </div>
+        <div
+          className="InfoText"
+          style={{
+            position: 'absolute',
+            top: '5px',
+            height: '280px',
+            left: '55vw',
+            width: '40vw',
+            justifyContent: 'center'
+          }}
+        >
+          <pre>Pressing scoop performs the following actions:</pre>
+          <pre> For each checked token:</pre>
+          <pre>
+            {' '}
+            If there is a swap quote for the token, swap the token for bonk
+          </pre>
+          <pre> If there is anything left in the account, burn it</pre>
+          <pre> If the token has withheld transfer fees, pay them</pre>
+          <pre> Now that the account is empty, close it</pre>
+          <pre>
+            A single transaction is created for each asset to be scooped.{' '}
+          </pre>
+          <pre>All transactions are signed with a single wallet signature.</pre>
+          <pre>
+            <b>Assets burnt through this platform are not recoverable </b>
+          </pre>
         </div>
       </div>
     </>

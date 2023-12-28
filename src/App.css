@@ -7,12 +7,26 @@
 }
 
 .NormalText {
-  font-size: x-large;
+  font-size: 2em;
   text-align: center;
   font-weight: bold;
+  font-style: normal;
   -webkit-text-fill-color: rgb(255, 0, 0);
   font-family: "Comic Sans MS";
   background: rgba(255, 255, 255, 0.541);
+}
+
+.InfoText {
+  background: rgba(255, 255, 255, 0.541);
+  padding: 0.5%;
+}
+
+pre {
+  font-family: "Comic Sans MS";
+  font-size: 0.8em;
+  text-align: left;
+  font-style: normal;
+  -webkit-text-fill-color: rgb(255, 0, 0);
 }
 
 body {
