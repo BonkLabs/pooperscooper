@@ -7,7 +7,11 @@ import {
   TokenBalance,
   loadJupyterApi
 } from './scooper';
-import { DefaultApi, SwapInstructionsResponse, QuoteResponse } from '@jup-ag/api';
+import {
+  DefaultApi,
+  SwapInstructionsResponse,
+  QuoteResponse
+} from '@jup-ag/api';
 
 enum ApplicationStates {
   LOADING = 0,
@@ -191,8 +195,13 @@ const AssetList: React.FC = () => {
               {Object.entries(assetList).map(([key, entry]) => (
                 <tr key={entry.asset.token.address}>
                   <td>{entry.asset.token.symbol}</td>
-                  <td>{Number(entry.asset?.balance) / 10 ** entry.asset.token.decimals}</td>
-                  <td>{Number(entry.quote?.outAmount) / 10 ** 5 || 'No quote'}</td>
+                  <td>
+                    {Number(entry.asset?.balance) /
+                      10 ** entry.asset.token.decimals}
+                  </td>
+                  <td>
+                    {Number(entry.quote?.outAmount) / 10 ** 5 || 'No quote'}
+                  </td>
                   <td>{entry.asset?.token.strict && <p>Strict</p>}</td>
                   <td>
                     <input
