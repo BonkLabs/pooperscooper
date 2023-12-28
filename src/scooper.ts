@@ -8,7 +8,7 @@ import {
   TransactionInstruction,
   AddressLookupTableAccount
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, createCloseAccountInstruction, TOKEN_2022_PROGRAM_ID, getAssociatedTokenAddressSync } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, createCloseAccountInstruction, TOKEN_2022_PROGRAM_ID, createHarvestWithheldTokensToMintInstruction } from '@solana/spl-token';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { Buffer } from 'buffer';
 import { SwapInstructionsResponse, DefaultApi, QuoteResponse } from '@jup-ag/api';
@@ -37,9 +37,10 @@ interface Asset {
 }
 
 interface TokenBalance {
-  account: string;
   token: TokenInfo;
   balance: bigint;
+  programId: PublicKey;
+  ataId: PublicKey;
 }
 
 /**
@@ -72,7 +73,7 @@ async function getTokenAccounts(
     TOKEN_PROGRAM_ID,
     { filters: filters }
   );
-  const filtersOld: GetProgramAccountsFilter[] = [
+  const filtersNew: GetProgramAccountsFilter[] = [
     {
       dataSize: 182
     },
@@ -85,36 +86,41 @@ async function getTokenAccounts(
   ];
   const accountsNew = await solanaConnection.getParsedProgramAccounts(
     TOKEN_2022_PROGRAM_ID,
-    { filters: filtersOld }
+    { filters: filtersNew }
   );
-
-  const accounts = [...accountsOld, ...accountsNew];
 
   console.log(
-    `Found ${accounts.length} token account(s) for wallet ${wallet}.`
+    `Found ${accountsNew.length} token account(s) for wallet ${wallet}.`
   );
-  var tokens: { account: any; token: any; balance: any }[] = [];
+  var tokens: TokenBalance[] = [];
 
-  accounts.forEach((account, i) => {
+  accountsOld.forEach((account, i) => {
+    console.log(account)
     const parsedAccountInfo: any = account.account.data;
-    console.log(parsedAccountInfo);
     const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
-    const tokenBalance: bigint =
-      BigInt(parsedAccountInfo['parsed']['info']['tokenAmount']['amount']);
     if (tokenList[mintAddress]) {
-      console.log(
-        'Recognised token: ' +
-          tokenList[mintAddress].symbol +
-          ' have: ' +
-          tokenBalance.toString()
-      );
       tokens.push({
-        account: account,
         token: tokenList[mintAddress],
-        balance: tokenBalance.toString()
+        balance: BigInt(parsedAccountInfo['parsed']['info']['tokenAmount']['amount']),
+        programId: TOKEN_PROGRAM_ID,
+        ataId: account.pubkey
       });
     }
   });
+  accountsNew.forEach((account, i) => {
+    console.log(account)
+    const parsedAccountInfo: any = account.account.data;
+    const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
+    if (tokenList[mintAddress]) {
+      tokens.push({
+        token: tokenList[mintAddress],
+        balance: BigInt(parsedAccountInfo['parsed']['info']['tokenAmount']['amount']),
+        programId: TOKEN_2022_PROGRAM_ID,
+        ataId: account.pubkey
+      });
+    }
+  });
+
   return tokens;
 }
 
@@ -178,7 +184,7 @@ async function sweepTokens(
 
   await Promise.all(assets.map(async (asset) => {
     if (asset.checked && wallet.publicKey) {
-      var instructions: TransactionInstruction[] = []
+      var instructions: TransactionInstruction[] = [];
       var lookup = undefined;
       if (asset.swap) {
         console.log(asset.swap)
@@ -212,19 +218,29 @@ async function sweepTokens(
         lookup = addressLookupTableAccounts;
       }
 
-      if ((asset.swap || asset.asset.balance === 0n) && !(asset.asset.token.tags.includes("token-2022"))) {
+      if (asset.swap || asset.asset.balance == 0n) {
+        
+
+        if (asset.asset.programId == TOKEN_2022_PROGRAM_ID) {
+          console.log("Adding harvest instruction")
+          const harvestFeesIx = createHarvestWithheldTokensToMintInstruction(
+            new PublicKey(asset.asset.token.address),
+            [asset.asset.ataId],
+            TOKEN_2022_PROGRAM_ID
+          )
+          instructions.push(harvestFeesIx)
+        }
         console.log("Adding closeAccountInstruction")
-        console.log(asset)
-        console.log(asset.asset.token.tags.includes("token-22"))
         const closeAccountIx = createCloseAccountInstruction(
-          getAssociatedTokenAddressSync(new PublicKey(asset.asset.token.address), wallet.publicKey),
+          asset.asset.ataId,
           wallet.publicKey,
           wallet.publicKey,
-          [] // multisig
+          [], // multisig
+          asset.asset.programId
         );
         instructions.push(closeAccountIx)
       }
-
+      console.log(instructions)
       if (instructions.length > 0) {
         const message = new TransactionMessage({
           payerKey: wallet.publicKey,
