@@ -6,9 +6,9 @@ import {
   PublicKey,
   TransactionMessage,
   TransactionInstruction,
-  AddressLookupTableAccount
+  AddressLookupTableAccount,
 } from '@solana/web3.js';
-import { TOKEN_PROGRAM_ID, createCloseAccountInstruction, TOKEN_2022_PROGRAM_ID, createHarvestWithheldTokensToMintInstruction } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, createCloseAccountInstruction, TOKEN_2022_PROGRAM_ID, createHarvestWithheldTokensToMintInstruction, createBurnInstruction } from '@solana/spl-token';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { Buffer } from 'buffer';
 import { SwapInstructionsResponse, DefaultApi, QuoteResponse } from '@jup-ag/api';
@@ -32,6 +32,7 @@ interface TokenInfo {
 
 interface Asset {
   asset: TokenBalance;
+  quote?: QuoteResponse;
   swap?: SwapInstructionsResponse;
   checked?: boolean;
 }
@@ -218,29 +219,43 @@ async function sweepTokens(
         lookup = addressLookupTableAccounts;
       }
 
-      if (asset.swap || asset.asset.balance == 0n) {
-        
-
-        if (asset.asset.programId == TOKEN_2022_PROGRAM_ID) {
-          console.log("Adding harvest instruction")
-          const harvestFeesIx = createHarvestWithheldTokensToMintInstruction(
-            new PublicKey(asset.asset.token.address),
-            [asset.asset.ataId],
-            TOKEN_2022_PROGRAM_ID
-          )
-          instructions.push(harvestFeesIx)
+      if (asset.asset.programId == TOKEN_2022_PROGRAM_ID) {
+        console.log("Adding burn instruction")
+        let burnAmount;
+        if (asset.quote) {
+          burnAmount = asset.asset.balance - BigInt(asset.quote.inAmount)
+        } else {
+          burnAmount = asset.asset.balance;
         }
-        console.log("Adding closeAccountInstruction")
-        const closeAccountIx = createCloseAccountInstruction(
+
+        const burnIx = createBurnInstruction(
           asset.asset.ataId,
+          new PublicKey(asset.asset.token.address),
           wallet.publicKey,
-          wallet.publicKey,
-          [], // multisig
-          asset.asset.programId
+          burnAmount,
+          [],
+          TOKEN_2022_PROGRAM_ID
         );
-        instructions.push(closeAccountIx)
+        instructions.push(burnIx)
+        console.log("Adding harvest instruction")
+        const harvestFeesIx = createHarvestWithheldTokensToMintInstruction(
+          new PublicKey(asset.asset.token.address),
+          [asset.asset.ataId],
+          TOKEN_2022_PROGRAM_ID
+        )
+        instructions.push(harvestFeesIx)
       }
-      console.log(instructions)
+      console.log("Adding closeAccountInstruction")
+      const closeAccountIx = createCloseAccountInstruction(
+        asset.asset.ataId,
+        wallet.publicKey,
+        wallet.publicKey,
+        [],
+        asset.asset.programId
+      );
+      instructions.push(closeAccountIx)
+
+        console.log(instructions)
       if (instructions.length > 0) {
         const message = new TransactionMessage({
           payerKey: wallet.publicKey,
