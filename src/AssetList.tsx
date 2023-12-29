@@ -46,6 +46,8 @@ class AssetState {
   }
 }
 
+const forbiddenTokens = ["Bonk"]
+
 const AssetList: React.FC = () => {
   const { connection } = useConnection();
   const wallet = useWallet();
@@ -204,17 +206,19 @@ const AssetList: React.FC = () => {
                   </td>
                   <td>{entry.asset?.token.strict && <p>Strict</p>}</td>
                   <td>
-                    <input
-                      onChange={(change) => {
-                        updateAssetList((aL) => {
-                          aL[entry.asset?.token.address].checked =
-                            change.target.checked;
-                          return aL;
-                        });
-                      }}
-                      type="checkbox"
-                      disabled={state != ApplicationStates.LOADED_QUOTES}
-                    />
+                    { forbiddenTokens.includes(entry.asset.token.symbol) ||
+                      <input
+                        onChange={(change) => {
+                          updateAssetList((aL) => {
+                            aL[entry.asset?.token.address].checked =
+                              change.target.checked;
+                            return aL;
+                          });
+                        }}
+                        type="checkbox"
+                        disabled={state != ApplicationStates.LOADED_QUOTES}
+                      />
+                    }
                   </td>
                   <td>
                     {entry.transactionState && <p>{entry.transactionState}</p>}
@@ -252,17 +256,12 @@ const AssetList: React.FC = () => {
           }}
         >
           <pre>Pressing scoop performs the following actions:</pre>
-          <pre> For each checked token:</pre>
-          <pre>
-            {' '}
-            If there is a swap quote for the token, swap the token for bonk
-          </pre>
-          <pre> If there is anything left in the account, burn it</pre>
-          <pre> If the token has withheld transfer fees, pay them</pre>
-          <pre> Now that the account is empty, close it</pre>
-          <pre>
-            A single transaction is created for each asset to be scooped.{' '}
-          </pre>
+          <pre>    For each checked token:</pre>
+          <pre>        If there is a swap quote for the token, swap the token for bonk</pre>
+          <pre>        If there is anything left in the account, burn it</pre>
+          <pre>        If the token has withheld transfer fees, pay them</pre>
+          <pre>        Now that the account is empty, close it</pre>
+          <pre>A single transaction is created for each asset to be scooped.</pre>
           <pre>All transactions are signed with a single wallet signature.</pre>
           <pre>
             <b>Assets burnt through this platform are not recoverable </b>

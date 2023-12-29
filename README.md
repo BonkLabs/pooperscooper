@@ -4,7 +4,7 @@ Solana web3 dapp that allows users to "clean" shit tokens out of their wallet an
 
 A basic user interface and usage is implemented in `AssetList.tsx`.
 
-The core logic which performs the application action is `in scooper.ts`
+The core logic which performs the application action is in `scooper.ts`
 
 # Usage
 
