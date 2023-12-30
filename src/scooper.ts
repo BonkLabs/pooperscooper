@@ -226,7 +226,7 @@ async function buildBurnTransaction(
       lookup = addressLookupTableAccounts;
     }
 
-    if (asset.asset.programId == TOKEN_2022_PROGRAM_ID) {
+    if (asset.asset.programId == TOKEN_2022_PROGRAM_ID && !asset.swap) {
       console.log('Adding burn instruction');
       let burnAmount;
       if (asset.quote) {
@@ -252,15 +252,17 @@ async function buildBurnTransaction(
       );
       instructions.push(harvestFeesIx);
     }
-    console.log('Adding closeAccountInstruction');
-    const closeAccountIx = createCloseAccountInstruction(
-      asset.asset.ataId,
-      wallet.publicKey,
-      wallet.publicKey,
-      [],
-      asset.asset.programId
-    );
-    instructions.push(closeAccountIx);
+    if (asset.asset.programId != TOKEN_2022_PROGRAM_ID || !asset.swap) {
+      console.log('Adding closeAccountInstruction');
+      const closeAccountIx = createCloseAccountInstruction(
+        asset.asset.ataId,
+        wallet.publicKey,
+        wallet.publicKey,
+        [],
+        asset.asset.programId
+      );
+      instructions.push(closeAccountIx);
+    }
 
     console.log(instructions);
     if (instructions.length > 0) {
