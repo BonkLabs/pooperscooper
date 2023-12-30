@@ -393,7 +393,8 @@ async function findQuotes(
       const quoteRequest: QuoteGetRequest = {
         inputMint: asset.token.address,
         outputMint: outputMint,
-        amount: Number(asset.balance) // Casting this to number can discard precision...
+        amount: Number(asset.balance), // Casting this to number can discard precision...
+        slippageBps: 1500
       };
 
       console.log(quoteRequest);
