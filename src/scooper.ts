@@ -54,6 +54,8 @@ interface TokenBalance {
   ataId: PublicKey;
 }
 
+const forbiddenTokens = ["Bonk", "USDC", "USDT"];
+
 /**
  * Gets token accounts including standard and token22 accounts
  *
@@ -109,7 +111,7 @@ async function getTokenAccounts(
     console.log(account);
     const parsedAccountInfo: any = account.account.data;
     const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
-    if (tokenList[mintAddress]) {
+    if (tokenList[mintAddress] && !forbiddenTokens.includes(tokenList[mintAddress].symbol) ) {
       tokens.push({
         token: tokenList[mintAddress],
         balance: BigInt(
