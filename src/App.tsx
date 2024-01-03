@@ -1,26 +1,26 @@
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import {
   ConnectionProvider,
   useConnection,
   useWallet,
-  WalletProvider
-} from '@solana/wallet-adapter-react';
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
 import {
   WalletModalProvider,
-  WalletMultiButton
-} from '@solana/wallet-adapter-react-ui';
+  WalletMultiButton,
+} from "@solana/wallet-adapter-react-ui";
 import {
   UnsafeBurnerWalletAdapter,
-  PhantomWalletAdapter
-} from '@solana/wallet-adapter-wallets';
-import { clusterApiUrl } from '@solana/web3.js';
-import React, { FC, ReactNode, useMemo } from 'react';
-import { render } from 'react-dom';
-import AssetList from './AssetList';
-import background from './DoodieBagWebsite.png';
+  PhantomWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+import { clusterApiUrl } from "@solana/web3.js";
+import React, { FC, ReactNode, useMemo } from "react";
+import { render } from "react-dom";
+import AssetList from "./AssetList";
+import background from "./DoodieBagWebsite.png";
 
-require('./App.css');
-require('@solana/wallet-adapter-react-ui/styles.css');
+require("./App.css");
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 const App: FC = () => {
   return (
@@ -33,7 +33,7 @@ export default App;
 
 const Context: FC<{ children: ReactNode }> = ({ children }) => {
   const network =
-    'https://solana-mainnet.g.alchemy.com/v2/sr4A9e6t54u1GIYJGm_egFTAIcmjym4U';
+    "https://solana-mainnet.g.alchemy.com/v2/sr4A9e6t54u1GIYJGm_egFTAIcmjym4U";
 
   // You can also provide a custom RPC endpoint.
   const endpoint = React.useMemo(() => network, [network]);
@@ -59,25 +59,13 @@ const Content: FC = () => {
 
   if (wallet && connection && wallet.publicKey) {
     return (
-      <div
-        className="App"
-        style={{
-          backgroundImage: `url(${background})`,
-          backgroundSize: 'cover'
-        }}
-      >
+      <div className="bg-[#091e05] p-24 min-h-screen">
         <AssetList />
       </div>
     );
   } else {
     return (
-      <div
-        className="App"
-        style={{
-          backgroundImage: `url(${background})`,
-          backgroundSize: 'cover'
-        }}
-      >
+      <div className="bg-[#091e05] p-24 min-h-screen">
         <WalletMultiButton />
       </div>
     );

@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .App {
   min-height: 100vh;
   display: flex;
@@ -13,7 +17,6 @@
   font-style: normal;
   -webkit-text-fill-color: rgb(255, 0, 0);
   font-family: "Comic Sans MS";
-  background: rgba(255, 255, 255, 0.541);
 }
 
 .InfoText {
