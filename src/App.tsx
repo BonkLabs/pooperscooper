@@ -54,20 +54,9 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 };
 
 const Content: FC = () => {
-  const wallet = useWallet();
-  const connection = useConnection();
-
-  if (wallet && connection && wallet.publicKey) {
-    return (
-      <div className="bg-[#091e05] p-24 min-h-screen">
-        <AssetList />
-      </div>
-    );
-  } else {
-    return (
-      <div className="bg-[#091e05] p-24 min-h-screen">
-        <WalletMultiButton />
-      </div>
-    );
-  }
+  return (
+    <div className="bg-[#091e05] p-24 min-h-screen">
+      <AssetList />
+    </div>
+  );
 };
