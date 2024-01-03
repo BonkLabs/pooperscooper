@@ -404,35 +404,30 @@ const AssetList: React.FC = () => {
 
   const steps = [
     {
-      title: "Lorem, ipsum dolor.",
+      title: "Select assets to Scoop",
       description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error cumque tempore est ab possimus quisquam reiciendis tempora animi! Quaerat, saepe?",
+        "Once your assets have been loaded, review the list and check any asset you would like to scoop into Bonk",
     },
     {
-      title: "Lorem, ipsum dolor.",
+      title: "Press scoop!",
       description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error cumque tempore est ab possimus quisquam reiciendis tempora animi! Quaerat, saepe?",
+        "Pressing \"Scoop\" after selecting assets, or \"Scoop All\" will start the scooping process",
     },
     {
-      title: "Lorem, ipsum dolor.",
+      title: "Scoop stage 1",
       description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error cumque tempore est ab possimus quisquam reiciendis tempora animi! Quaerat, saepe?",
+        "Any checked assets with available swaps are swapped to bonk",
     },
     {
-      title: "Lorem, ipsum dolor.",
+      title: "Scoop stage 2",
       description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error cumque tempore est ab possimus quisquam reiciendis tempora animi! Quaerat, saepe?",
+        "Any remaining unswappable balance is burned",
     },
     {
-      title: "Lorem, ipsum dolor.",
+      title: "Scoop stage 3",
       description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error cumque tempore est ab possimus quisquam reiciendis tempora animi! Quaerat, saepe?",
-    },
-    {
-      title: "Lorem, ipsum dolor.",
-      description:
-        "Lorem ipsum dolor sit amet consectetur adipisicing elit. Error cumque tempore est ab possimus quisquam reiciendis tempora animi! Quaerat, saepe?",
-    },
+        "Associated token account for each scooped asset is closed, returning their rent Solana to you",
+    }
   ];
 
   const ScoopList = () => {
@@ -659,10 +654,11 @@ const AssetList: React.FC = () => {
               <h2 className="text-3xl font-bold sm:text-4xl">Doodie Bag</h2>
 
               <p className="mt-4 text-gray-300">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Repellat dolores iure fugit totam iste obcaecati. Consequatur
-                ipsa quod ipsum sequi culpa delectus, cumque id tenetur
-                quibusdam, quos fuga minima.
+                Airdrops and adverts clutter your wallet.
+
+                This tool allows you to quickly "Scoop" all your unwanted assets into Bonk via jup.ag
+              
+                Token accounts for scooped assets are closed, returning the Sol rent to you.
               </p>
             </div>
 
