@@ -61,6 +61,157 @@ const AssetList: React.FC = () => {
     ApplicationStates.LOADING
   );
   const [selectAll, setSelectAll] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+
+  const isButtonDisabled = !Object.values(assetList).some(
+    (entry) => entry.checked
+  );
+
+  const selectedItems = Object.values(assetList).filter(
+    (entry) => entry.checked
+  );
+
+  const SummaryModal = () => {
+    return (
+      <div
+        className={`fixed inset-0 z-30 flex h-full w-full flex-col gap-4 bg-black bg-opacity-75 transition-all duration-1000 items-center justify-center ${
+          openModal ? "visible opacity-100" : "invisible opacity-0"
+        }`}
+      >
+        <div
+          className="relative grid md:grid-cols-[2fr_1fr] w-screen max-w-5xl border border-gray-600 bg-gray-100 px-4 py-8 sm:px-6 lg:px-8 rounded max-h-[80vh] gap-8"
+          role="dialog"
+        >
+          <button
+            className="absolute end-4 top-4 text-gray-600 transition hover:scale-110"
+            onClick={() => setOpenModal(false)}
+          >
+            <span className="sr-only">Close cart</span>
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              className="h-5 w-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+          <div className="mt-4 space-y-6 overflow-hidden overflow-y-auto pr-8">
+            <ul className="space-y-4">
+              {selectedItems.map((entry, index) => {
+                return (
+                  <li className="flex items-center gap-4">
+                    <img
+                      src={entry.asset.token.logoURI}
+                      alt="Logo"
+                      className="h-16 w-16 rounded object-cover"
+                    />
+
+                    <div>
+                      <h3 className="text-sm text-gray-900">
+                        {entry.asset.token.name}
+                      </h3>
+
+                      <dl className="mt-0.5 space-y-px text-[10px] text-gray-600">
+                        <div>
+                          <dt className="inline">Balance: </dt>
+                          <dd className="inline">
+                            {(
+                              Number(entry.asset?.balance) /
+                              10 ** entry.asset.token.decimals
+                            ).toLocaleString()}
+                          </dd>
+                        </div>
+
+                        <div>
+                          <dt className="inline">Scoop Value: </dt>
+                          <dd className="inline">
+                            {entry.quote?.outAmount
+                              ? (
+                                  Number(entry.quote.outAmount) /
+                                  10 ** 5
+                                ).toLocaleString()
+                              : "No quote"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+
+                    <div className="flex flex-1 items-center justify-end gap-2">
+                      <button
+                        className="text-gray-600 transition hover:text-red-600"
+                        onClick={(change) => {
+                          updateAssetList((aL) => {
+                            aL[entry.asset?.token.address].checked = false;
+                            if (selectedItems.length === 1) {
+                              setOpenModal(false);
+                            }
+                            return aL;
+                          });
+                        }}
+                      >
+                        <span className="sr-only">Remove item</span>
+
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M8 11C7.44772 11 7 11.4477 7 12C7 12.5523 7.44772 13 8 13H16C16.5523 13 17 12.5523 17 12C17 11.4477 16.5523 11 16 11H8Z"
+                            fill="currentColor"
+                          />
+                          <path
+                            fill-rule="evenodd"
+                            clip-rule="evenodd"
+                            d="M23 12C23 18.0751 18.0751 23 12 23C5.92487 23 1 18.0751 1 12C1 5.92487 5.92487 1 12 1C18.0751 1 23 5.92487 23 12ZM21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          <div className="space-y-4 mt-4">
+            <div className="border-t border-gray-100">
+              <div className="space-y-4">
+                <dl className="space-y-0.5 text-sm text-gray-700">
+                  <div className="flex justify-between">
+                    <dt>No. of Scooped Tokens</dt>
+                    <dd>{selectedItems.length}</dd>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <dt>Total Expected Scoop Value</dt>
+                    <dd>{(totalScoop / 10 ** 5).toLocaleString()}</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+            <button
+              onClick={scoop}
+              className="block rounded bg-bonk-yellow px-5 py-3 text-sm text-gray-700 transition hover:bg-bonk-yellow/80 w-full"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const handleSelectAll = () => {
     setSelectAll(!selectAll);
 
@@ -260,7 +411,6 @@ const AssetList: React.FC = () => {
 
             <tbody className="divide-y divide-gray-200">
               {Object.entries(assetList).map(([key, entry]) => {
-                console.log("ENTRY HERE", entry);
                 return (
                   <tr
                     key={key}
@@ -416,8 +566,13 @@ const AssetList: React.FC = () => {
           </article>
           {state === ApplicationStates.LOADED_QUOTES && (
             <button
-              className="inline-block rounded bg-bonk-yellow px-8 py-3 font-medium text-black transition hover:shadow-xl focus:outline-none focus:ring active:bg-indigo-500 text-xl"
-              onClick={scoop}
+              className={`inline-block rounded bg-bonk-yellow px-8 py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
+                isButtonDisabled
+                  ? "hover:cursor-not-allowed opacity-50"
+                  : "hover:shadow-xl"
+              }`}
+              disabled={isButtonDisabled}
+              onClick={() => setOpenModal(true)}
             >
               Scoop
             </button>
@@ -426,10 +581,12 @@ const AssetList: React.FC = () => {
       </div>
     );
   };
+
   return (
     <>
       {" "}
       <div className="flex flex-col gap-4">
+        <SummaryModal />
         <section className="bg-[#004f2d] text-white rounded-3xl relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
           <div className="block md:absolute !top-12 !right-12 pb-4">
             <WalletMultiButton />
