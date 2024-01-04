@@ -223,7 +223,7 @@ const AssetList: React.FC = () => {
 
   const ScoopList = () => {
     return (
-      <div className="grid grid-cols-[2fr_1fr] gap-4">
+      <div className="grid lg:grid-cols-[2fr_1fr] gap-4">
         <div className="overflow-x-auto rounded-3xl">
           <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm rounded-3xl">
             <thead className="ltr:text-left rtl:text-right">
@@ -271,7 +271,7 @@ const AssetList: React.FC = () => {
                     }`}
                   >
                     <td
-                      className={`sticky inset-y-0 start-0 p-4 bg-white group-hover:bg-gray-100 text-center ${
+                      className={`p-4 bg-white group-hover:bg-gray-100 text-center ${
                         entry.checked ? "!bg-gray-100" : ""
                       }`}
                     >
@@ -301,7 +301,7 @@ const AssetList: React.FC = () => {
                           <img
                             src={entry.asset.token.logoURI}
                             alt={`${entry.asset.token.symbol} Logo`}
-                            className=" h-8 w-8 rounded-full border border-[#091e05]"
+                            className="h-8 w-8 rounded-full border border-[#091e05]"
                           />
                         ) : (
                           <svg
@@ -310,7 +310,7 @@ const AssetList: React.FC = () => {
                             viewBox="0 0 24 24"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
-                            className=" h-8 w-8 rounded-full border border-[#091e05]"
+                            className="h-8 w-8 rounded-full border border-[#091e05]"
                           >
                             <path
                               fill-rule="evenodd"
@@ -353,7 +353,7 @@ const AssetList: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="top-12 mb-auto flex flex-col gap-4 lg:sticky bg-white rounded-3xl p-4">
+        <div className="top-12 mb-auto flex flex-col gap-4 lg:sticky bg-white rounded-3xl p-4 order-first lg:order-last">
           <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white p-6 sm:justify-between">
             <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
               <svg
@@ -430,8 +430,11 @@ const AssetList: React.FC = () => {
     <>
       {" "}
       <div className="flex flex-col gap-4">
-        <section className="bg-[#004f2d] text-white rounded-3xl relative">
-          <div className="max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+        <section className="bg-[#004f2d] text-white rounded-3xl relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+          <div className="block md:absolute !top-12 !right-12 pb-4">
+            <WalletMultiButton />
+          </div>
+          <div className="max-w-screen-xl">
             <div className="max-w-xl">
               <h2 className="text-3xl font-bold sm:text-4xl">Doodie Bag</h2>
 
@@ -463,10 +466,6 @@ const AssetList: React.FC = () => {
                 );
               })}
             </div>
-          </div>
-
-          <div className="!absolute !top-16 !right-16">
-            <WalletMultiButton />
           </div>
         </section>
         {wallet && connection && wallet.publicKey ? (

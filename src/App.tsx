@@ -55,7 +55,14 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 
 const Content: FC = () => {
   return (
-    <div className="bg-[#091e05] p-24 min-h-screen">
+    <div className="bg-[#091e05] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen">
+      <header>
+        <img
+          src={`${window.location.origin}/doodie/images/scooper_logo.png`}
+          alt="Doodie Logo"
+          width={400}
+        />
+      </header>
       <AssetList />
     </div>
   );
