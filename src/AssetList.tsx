@@ -14,6 +14,8 @@ import {
   QuoteResponse,
 } from "@jup-ag/api";
 
+const BONK_TOKEN_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
+
 enum ApplicationStates {
   LOADING = 0,
   LOADED_JUPYTER = 1,
@@ -303,6 +305,17 @@ const AssetList: React.FC = () => {
     });
   }
 
+  function reload() {
+    setAssetList((al) => {
+      const newList : {[id: string]: AssetState} = {};
+      Object.entries(newList).forEach(([key, asset]) => {
+        newList[key] = new AssetState(asset.asset)
+      })
+      return newList;
+    })
+    setState(ApplicationStates.LOADING)
+  }
+
   /* Application startup */
   /* 1.a: Load the wallet address */
   if (wallet.connected && wallet.publicKey && connection) {
@@ -334,7 +347,7 @@ const AssetList: React.FC = () => {
       findQuotes(
         connection,
         tokens,
-        "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+        BONK_TOKEN_MINT,
         walletAddress,
         jupiterQuoteApi,
         (id, asset) => {
@@ -357,7 +370,7 @@ const AssetList: React.FC = () => {
         setState(ApplicationStates.LOADED_QUOTES);
       });
     }
-  }, [walletAddress, jupiterQuoteApi, tokens]);
+  }, [walletAddress, jupiterQuoteApi, tokens, state]);
   /* End application startup */
 
   /* Scoop button callback, clean all the tokens! */
@@ -404,29 +417,24 @@ const AssetList: React.FC = () => {
 
   const steps = [
     {
-      title: "Select assets to Scoop",
+      title: "Wait for assets to load",
       description:
-        "Once your assets have been loaded, review the list and check any asset you would like to scoop into Bonk",
+        "Scooper will check your wallet for assets that can be swapped and accounts that can be closed and present them in a list below",
     },
     {
-      title: "Press scoop!",
+      title: "Select assets for Scooping",
       description:
-        "Pressing \"Scoop\" after selecting assets, or \"Scoop All\" will start the scooping process",
+        "Review the assets in the list and check any assets you would like to Scoop, then press scoop. Or use Scoop all",
     },
     {
-      title: "Scoop stage 1",
+      title: "Review summary",
       description:
-        "Any checked assets with available swaps are swapped to bonk",
+        "Make sure only assets you want to Scoop are shown in the Summary. Press confirm and then sign the transaction if you are satisfied",
     },
     {
-      title: "Scoop stage 2",
+      title: "Scooper scoops",
       description:
-        "Any remaining unswappable balance is burned",
-    },
-    {
-      title: "Scoop stage 3",
-      description:
-        "Associated token account for each scooped asset is closed, returning their rent Solana to you",
+        "Scooper will now issue the transactions for each asset to be scooped and let you know when the process is complete.",
     }
   ];
 
@@ -635,6 +643,7 @@ const AssetList: React.FC = () => {
               Scoop
             </button>
           )}
+          <button onClick={(x) => {reload()}}>Reload!</button>
         </div>
       </div>
     );
