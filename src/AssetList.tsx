@@ -272,7 +272,7 @@ const AssetList: React.FC = () => {
                   >
                     <td
                       className={`sticky inset-y-0 start-0 p-4 bg-white group-hover:bg-gray-100 text-center ${
-                        entry.checked ? "bg-gray-100" : ""
+                        entry.checked ? "!bg-gray-100" : ""
                       }`}
                     >
                       {forbiddenTokens.includes(entry.asset.token.symbol) || (
