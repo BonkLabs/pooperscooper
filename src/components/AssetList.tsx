@@ -545,87 +545,300 @@ const AssetList: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="top-12 mb-auto flex flex-col gap-4 lg:sticky bg-white rounded-3xl p-4 order-first lg:order-last">
-          <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white p-6 sm:justify-between">
-            <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+        <div className="lg:sticky order-first lg:order-last top-12 mb-auto grid gap-4">
+          <div className="flex flex-col gap-4 bg-white rounded-3xl p-4">
+            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white p-6 sm:justify-between">
+              <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
+                    fill="currentColor"
+                  />
+                  <path d="M9 9H11V17H9V9Z" fill="currentColor" />
+                  <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+                </svg>
+              </span>
+
+              <div>
+                <p className="text-2xl font-medium text-gray-900">
+                  {(totalPossibleScoop / 10 ** 5).toLocaleString()}
+                </p>
+
+                <p className="text-sm text-gray-500">Possible Scoop</p>
+              </div>
+            </article>
+            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white p-6 sm:justify-between">
+              <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M22.775 8C22.9242 8.65461 23 9.32542 23 10H14V1C14.6746 1 15.3454 1.07584 16 1.22504C16.4923 1.33724 16.9754 1.49094 17.4442 1.68508C18.5361 2.13738 19.5282 2.80031 20.364 3.63604C21.1997 4.47177 21.8626 5.46392 22.3149 6.55585C22.5091 7.02455 22.6628 7.5077 22.775 8ZM20.7082 8C20.6397 7.77018 20.5593 7.54361 20.4672 7.32122C20.1154 6.47194 19.5998 5.70026 18.9497 5.05025C18.2997 4.40024 17.5281 3.88463 16.6788 3.53284C16.4564 3.44073 16.2298 3.36031 16 3.2918V8H20.7082Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M1 14C1 9.02944 5.02944 5 10 5C10.6746 5 11.3454 5.07584 12 5.22504V12H18.775C18.9242 12.6546 19 13.3254 19 14C19 18.9706 14.9706 23 10 23C5.02944 23 1 18.9706 1 14ZM16.8035 14H10V7.19648C6.24252 7.19648 3.19648 10.2425 3.19648 14C3.19648 17.7575 6.24252 20.8035 10 20.8035C13.7575 20.8035 16.8035 17.7575 16.8035 14Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+
+              <div>
+                <p className="text-2xl font-medium text-gray-900">
+                  {(totalScoop / 10 ** 5).toLocaleString()}
+                </p>
+
+                <p className="text-sm text-gray-500">Total Scoop</p>
+              </div>
+            </article>
+            {state === ApplicationStates.LOADED_QUOTES && (
+              <button
+                className={`inline-block rounded bg-bonk-yellow px-8 py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
+                  isButtonDisabled
+                    ? "hover:cursor-not-allowed opacity-50"
+                    : "hover:shadow-xl"
+                }`}
+                disabled={isButtonDisabled}
+                onClick={() => setOpenModal(true)}
               >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
-                  fill="currentColor"
-                />
-                <path d="M9 9H11V17H9V9Z" fill="currentColor" />
-                <path d="M13 9H15V17H13V9Z" fill="currentColor" />
-              </svg>
-            </span>
+                Scoop
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2 bg-white rounded-3xl p-4">
+            <div className="relative col-span-2">
+              <label className="sr-only"> Search </label>
 
-            <div>
-              <p className="text-2xl font-medium text-gray-900">
-                {(totalPossibleScoop / 10 ** 5).toLocaleString()}
-              </p>
+              <input
+                type="text"
+                id="Search"
+                placeholder="Search Asset"
+                className="w-full rounded border border-gray-300 py-2.5 px-4 pe-10 shadow-sm sm:text-sm"
+              />
 
-              <p className="text-sm text-gray-500">Possible Scoop</p>
+              <span className="absolute inset-y-0 end-0 grid w-10 place-content-center">
+                <button
+                  type="button"
+                  className="text-gray-600 hover:text-gray-700"
+                >
+                  <span className="sr-only">Search</span>
+
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="h-4 w-4"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                    />
+                  </svg>
+                </button>
+              </span>
             </div>
-          </article>
-          <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white p-6 sm:justify-between">
-            <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            <div className="space-y-2 col-span-2">
+              <details className="overflow-hidden rounded border border-gray-300 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between gap-2 bg-white p-4 text-gray-900 transition">
+                  <span className="text-sm font-medium"> Filter </span>
+
+                  <span className="transition group-open:-rotate-180">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      className="h-4 w-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  </span>
+                </summary>
+
+                <div className="border-t border-gray-200 bg-white">
+                  <header className="flex items-center justify-between p-4">
+                    <span className="text-sm text-gray-700"> 0 Selected </span>
+
+                    <button
+                      type="button"
+                      className="text-sm text-gray-900 underline underline-offset-4"
+                    >
+                      Reset
+                    </button>
+                  </header>
+
+                  <ul className="space-y-1 border-t border-gray-200 p-4">
+                    <li>
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-5 w-5 rounded border-gray-300"
+                        />
+
+                        <span className="text-sm font-medium text-gray-700">
+                          0 Balance
+                        </span>
+                      </label>
+                    </li>
+
+                    <li>
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-5 w-5 rounded border-gray-300"
+                        />
+
+                        <span className="text-sm font-medium text-gray-700">
+                          Strict
+                        </span>
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+              </details>
+
+              <details className="overflow-hidden rounded border border-gray-300 [&_summary::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer items-center justify-between gap-2 bg-white p-4 text-gray-900 transition">
+                  <span className="text-sm font-medium"> Sort </span>
+
+                  <span className="transition group-open:-rotate-180">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      className="h-4 w-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                      />
+                    </svg>
+                  </span>
+                </summary>
+
+                <div className="border-t border-gray-200 bg-white">
+                  <header className="flex items-center justify-between p-4">
+                    <span className="text-sm text-gray-700 flex items-center gap-2">
+                      Ascending
+                      <label className="relative h-8 w-12 cursor-pointer [-webkit-tap-highlight-color:_transparent]">
+                        <input
+                          type="checkbox"
+                          id="AcceptConditions"
+                          className="peer sr-only"
+                        />
+
+                        <span className="absolute inset-0 m-auto h-2 rounded-full bg-gray-300"></span>
+
+                        <span className="absolute inset-y-0 start-0 m-auto h-6 w-6 rounded-full bg-gray-500 transition-all peer-checked:start-6 peer-checked:[&_>_*]:scale-0">
+                          <span className="absolute inset-0 m-auto h-4 w-4 rounded-full bg-gray-200 transition">
+                            {" "}
+                          </span>
+                        </span>
+                      </label>
+                      Descending
+                    </span>
+
+                    <button
+                      type="button"
+                      className="text-sm text-gray-900 underline underline-offset-4"
+                    >
+                      Reset
+                    </button>
+                  </header>
+
+                  <ul className="space-y-1 border-t border-gray-200 p-4">
+                    <li>
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-5 w-5 rounded border-gray-300"
+                        />
+
+                        <span className="text-sm font-medium text-gray-700">
+                          Symbol
+                        </span>
+                      </label>
+                    </li>
+
+                    <li>
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-5 w-5 rounded border-gray-300"
+                        />
+
+                        <span className="text-sm font-medium text-gray-700">
+                          Balance
+                        </span>
+                      </label>
+                    </li>
+
+                    <li>
+                      <label className="inline-flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="h-5 w-5 rounded border-gray-300"
+                        />
+
+                        <span className="text-sm font-medium text-gray-700">
+                          Scoop Value
+                        </span>
+                      </label>
+                    </li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+            <div className="flex justify-end w-full col-span-2">
+              <div
+                className="bg-[#23617B] text-white text-center py-2 rounded hover:opacity-65 hover:cursor-pointer col-span-2 max-w-max px-8 flex items-center gap-2"
+                onClick={(x) => {
+                  reload();
+                }}
               >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M22.775 8C22.9242 8.65461 23 9.32542 23 10H14V1C14.6746 1 15.3454 1.07584 16 1.22504C16.4923 1.33724 16.9754 1.49094 17.4442 1.68508C18.5361 2.13738 19.5282 2.80031 20.364 3.63604C21.1997 4.47177 21.8626 5.46392 22.3149 6.55585C22.5091 7.02455 22.6628 7.5077 22.775 8ZM20.7082 8C20.6397 7.77018 20.5593 7.54361 20.4672 7.32122C20.1154 6.47194 19.5998 5.70026 18.9497 5.05025C18.2997 4.40024 17.5281 3.88463 16.6788 3.53284C16.4564 3.44073 16.2298 3.36031 16 3.2918V8H20.7082Z"
-                  fill="currentColor"
-                />
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M1 14C1 9.02944 5.02944 5 10 5C10.6746 5 11.3454 5.07584 12 5.22504V12H18.775C18.9242 12.6546 19 13.3254 19 14C19 18.9706 14.9706 23 10 23C5.02944 23 1 18.9706 1 14ZM16.8035 14H10V7.19648C6.24252 7.19648 3.19648 10.2425 3.19648 14C3.19648 17.7575 6.24252 20.8035 10 20.8035C13.7575 20.8035 16.8035 17.7575 16.8035 14Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </span>
-
-            <div>
-              <p className="text-2xl font-medium text-gray-900">
-                {(totalScoop / 10 ** 5).toLocaleString()}
-              </p>
-
-              <p className="text-sm text-gray-500">Total Scoop</p>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13.1459 11.0499L12.9716 9.05752L15.3462 8.84977C14.4471 7.98322 13.2242 7.4503 11.8769 7.4503C9.11547 7.4503 6.87689 9.68888 6.87689 12.4503C6.87689 15.2117 9.11547 17.4503 11.8769 17.4503C13.6977 17.4503 15.2911 16.4771 16.1654 15.0224L18.1682 15.5231C17.0301 17.8487 14.6405 19.4503 11.8769 19.4503C8.0109 19.4503 4.87689 16.3163 4.87689 12.4503C4.87689 8.58431 8.0109 5.4503 11.8769 5.4503C13.8233 5.4503 15.5842 6.24474 16.853 7.52706L16.6078 4.72412L18.6002 4.5498L19.1231 10.527L13.1459 11.0499Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                Refresh Assets
+              </div>
             </div>
-          </article>
-          {state === ApplicationStates.LOADED_QUOTES && (
-            <button
-              className={`inline-block rounded bg-bonk-yellow px-8 py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
-                isButtonDisabled
-                  ? "hover:cursor-not-allowed opacity-50"
-                  : "hover:shadow-xl"
-              }`}
-              disabled={isButtonDisabled}
-              onClick={() => setOpenModal(true)}
-            >
-              Scoop
-            </button>
-          )}
-          <button
-            onClick={(x) => {
-              reload();
-            }}
-          >
-            Reload!
-          </button>
+          </div>
         </div>
       </div>
     );
