@@ -16,8 +16,8 @@ import {
 import { clusterApiUrl } from "@solana/web3.js";
 import React, { FC, ReactNode, useMemo } from "react";
 import { render } from "react-dom";
-import AssetList from "./AssetList";
-import background from "./DoodieBagWebsite.png";
+import AssetList from "./components/AssetList";
+import Info from "./components/Info";
 
 require("./App.css");
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -54,6 +54,9 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 };
 
 const Content: FC = () => {
+  const { connection } = useConnection();
+  const wallet = useWallet();
+
   return (
     <div className="bg-[#091e05] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen">
       <header>
@@ -63,7 +66,12 @@ const Content: FC = () => {
           width={400}
         />
       </header>
-      <AssetList />
+      <Info />
+      {wallet && connection && wallet.publicKey ? (
+        <AssetList />
+      ) : (
+        <div className="text-white">Please connect your wallet</div>
+      )}
     </div>
   );
 };
