@@ -1,5 +1,3 @@
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-
 const Info = () => {
   const steps = [
     {
@@ -26,9 +24,6 @@ const Info = () => {
 
   return (
     <section className="bg-[#004f2d] text-white rounded-3xl relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16 mb-4">
-      <div className="block md:absolute !top-12 !right-12 pb-4">
-        <WalletMultiButton />
-      </div>
       <div className="max-w-screen-xl">
         <div className="max-w-xl">
           <h2 className="text-3xl font-bold sm:text-4xl">Doodie Bag</h2>
@@ -41,7 +36,7 @@ const Info = () => {
           </p>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 md:mt-16 md:grid-cols-2 md:gap-12 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-4 md:mt-16 md:grid-cols-2 md:gap-12">
           {steps.map((step, index) => {
             const { title, description } = step;
             return (
