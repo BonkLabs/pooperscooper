@@ -412,13 +412,13 @@ const AssetList: React.FC = () => {
     return <></>;
   }
 
-  console.log("assetlist", assetList);
+  console.log("state", state, state === ApplicationStates.LOADING);
 
   const ScoopList = () => {
     return (
       <div className="grid lg:grid-cols-[2fr_1fr] gap-4">
-        <div className="overflow-x-auto rounded-3xl">
-          <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm rounded-3xl">
+        <div className={`overflow-x-auto rounded-3xl`}>
+          <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
             <thead className="ltr:text-left rtl:text-right">
               <tr>
                 <th className="sticky inset-y-0 start-0 bg-white p-4">
@@ -450,8 +450,36 @@ const AssetList: React.FC = () => {
                   </th> */}
               </tr>
             </thead>
-
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 relative">
+              {state !== ApplicationStates.LOADED_QUOTES && (
+                <tr className="text-center font-black uppercase text-5xl bg-white/70 flex items-center gap-2 absolute min-h-48 h-full w-full justify-center animate-pulse">
+                  Fetching Data...{" "}
+                  <svg
+                    width="96"
+                    height="96"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="animate-spin"
+                  >
+                    <path
+                      opacity="0.2"
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19ZM12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M12 22C17.5228 22 22 17.5228 22 12H19C19 15.866 15.866 19 12 19V22Z"
+                      fill="currentColor"
+                    />
+                    <path
+                      d="M2 12C2 6.47715 6.47715 2 12 2V5C8.13401 5 5 8.13401 5 12H2Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </tr>
+              )}
               {Object.entries(assetList).map(([key, entry]) => {
                 return (
                   <tr
