@@ -635,22 +635,32 @@ const AssetList: React.FC = () => {
                 <p className="text-sm text-gray-500">Total Scoop</p>
               </div>
             </article>
-            {state === ApplicationStates.LOADED_QUOTES && (
-              <button
-                className={`inline-block rounded bg-bonk-yellow px-8 py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
-                  isButtonDisabled
-                    ? "hover:cursor-not-allowed opacity-50"
-                    : "hover:shadow-xl"
-                }`}
-                disabled={isButtonDisabled}
-                onClick={() => setOpenModal(true)}
-              >
-                Scoop
-              </button>
-            )}
+            <button
+              className={`inline-block rounded bg-bonk-yellow px-8 py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
+                isButtonDisabled
+                  ? "hover:cursor-not-allowed opacity-50"
+                  : "hover:shadow-xl"
+              }`}
+              disabled={isButtonDisabled}
+              onClick={() => setOpenModal(true)}
+            >
+              Scoop
+            </button>
           </div>
-          <div className="grid grid-cols-2 gap-2 bg-white rounded-3xl p-4">
-            <div className="relative col-span-2">
+          <div
+            className={`grid gap-2 bg-white rounded-3xl p-4 ${
+              state !== ApplicationStates.LOADED_QUOTES
+                ? "hover:cursor-not-allowed"
+                : ""
+            }`}
+          >
+            <div
+              className={`relative ${
+                state !== ApplicationStates.LOADED_QUOTES
+                  ? "pointer-events-none"
+                  : ""
+              }`}
+            >
               <label className="sr-only"> Search </label>
 
               <input
@@ -684,7 +694,13 @@ const AssetList: React.FC = () => {
                 </button>
               </span>
             </div>
-            <div className="space-y-2 col-span-2">
+            <div
+              className={`space-y-2 ${
+                state !== ApplicationStates.LOADED_QUOTES
+                  ? "pointer-events-none"
+                  : ""
+              }`}
+            >
               <details className="overflow-hidden rounded border border-gray-300 [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex cursor-pointer items-center justify-between gap-2 bg-white p-4 text-gray-900 transition">
                   <span className="text-sm font-medium"> Filter </span>
@@ -844,9 +860,15 @@ const AssetList: React.FC = () => {
                 </div>
               </details>
             </div>
-            <div className="flex justify-end w-full col-span-2">
+            <div
+              className={`flex justify-end w-full ${
+                state !== ApplicationStates.LOADED_QUOTES
+                  ? "pointer-events-none"
+                  : ""
+              }`}
+            >
               <div
-                className="bg-[#23617B] text-white text-center py-2 rounded hover:opacity-65 hover:cursor-pointer col-span-2 max-w-max px-8 flex items-center gap-2"
+                className="bg-[#23617B] text-white text-center py-2 rounded hover:opacity-65 hover:cursor-pointer max-w-max px-8 flex items-center gap-2"
                 onClick={(x) => {
                   reload();
                 }}
