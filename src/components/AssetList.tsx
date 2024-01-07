@@ -65,6 +65,10 @@ const AssetList: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [search, setSearch] = useState("");
 
+  // Filters
+  const [showZeroBalance, setShowZeroBalance] = useState(false);
+  const [showStrict, setShowStrict] = useState(false);
+
   const isButtonDisabled = !Object.values(assetList).some(
     (entry) => entry.checked
   );
@@ -417,14 +421,20 @@ const AssetList: React.FC = () => {
     const nameSearch = entry[1].asset.token.symbol
       .toLowerCase()
       .includes(search.toLowerCase());
-    return nameSearch;
+    const filterZeroBalance =
+      !showZeroBalance ||
+      Number(entry[1].asset?.balance) / 10 ** entry[1].asset.token.decimals ===
+        0;
+    const filterStrict = !showStrict || entry[1].asset.token.strict === true;
+
+    return nameSearch && filterZeroBalance && filterStrict;
   });
   console.log("FILTERED DATA HERE", filteredData);
 
   const ScoopList = () => {
     return (
       <div className="grid lg:grid-cols-[2fr_1fr] gap-4">
-        <div className={`overflow-x-auto rounded-3xl`}>
+        <div className={`overflow-x-auto rounded-3xl self-start`}>
           <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
             <thead className="ltr:text-left rtl:text-right">
               <tr>
@@ -491,6 +501,16 @@ const AssetList: React.FC = () => {
                   </td>
                 </tr>
               )}
+              {state === ApplicationStates.LOADED_QUOTES &&
+                filteredData.length === 0 && (
+                  <tr>
+                    <td className="table-cell" colSpan={5}>
+                      <div className="text-center font-black uppercase text-lg lg:text-4xl bg-white/70 flex items-center gap-2 min-h-48 h-full w-full justify-center">
+                        No Data
+                      </div>
+                    </td>
+                  </tr>
+                )}
               {filteredData.map(([key, entry]) => {
                 return (
                   <tr
@@ -736,23 +756,13 @@ const AssetList: React.FC = () => {
                 </summary>
 
                 <div className="border-t border-gray-200 bg-white">
-                  <header className="flex items-center justify-between p-4">
-                    <span className="text-sm text-gray-700"> 0 Selected </span>
-
-                    <button
-                      type="button"
-                      className="text-sm text-gray-900 underline underline-offset-4"
-                    >
-                      Reset
-                    </button>
-                  </header>
-
                   <ul className="space-y-1 border-t border-gray-200 p-4">
                     <li>
                       <label className="inline-flex items-center gap-2">
                         <input
                           type="checkbox"
                           className="h-5 w-5 rounded border-gray-300"
+                          onClick={() => setShowZeroBalance(!showZeroBalance)}
                         />
 
                         <span className="text-sm font-medium text-gray-700">
@@ -766,6 +776,7 @@ const AssetList: React.FC = () => {
                         <input
                           type="checkbox"
                           className="h-5 w-5 rounded border-gray-300"
+                          onClick={() => setShowStrict(!showStrict)}
                         />
 
                         <span className="text-sm font-medium text-gray-700">
@@ -820,13 +831,6 @@ const AssetList: React.FC = () => {
                       </label>
                       Descending
                     </span>
-
-                    <button
-                      type="button"
-                      className="text-sm text-gray-900 underline underline-offset-4"
-                    >
-                      Reset
-                    </button>
                   </header>
 
                   <ul className="space-y-1 border-t border-gray-200 p-4">
