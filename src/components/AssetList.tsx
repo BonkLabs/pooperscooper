@@ -644,7 +644,7 @@ const AssetList: React.FC = () => {
         </div>
         <div className="lg:sticky order-first lg:order-last top-12 mb-auto grid gap-4">
           <div className="flex flex-col gap-4 bg-white rounded-3xl p-4">
-            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white p-6 sm:justify-between">
+            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white py-6 px-4 sm:justify-between">
               <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
                 <svg
                   width="24"
@@ -672,7 +672,7 @@ const AssetList: React.FC = () => {
                 <p className="text-sm text-gray-500">Possible Scoop</p>
               </div>
             </article>
-            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white p-6 sm:justify-between">
+            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white py-6 px-4 sm:justify-between">
               <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
                 <svg
                   width="24"
@@ -705,7 +705,7 @@ const AssetList: React.FC = () => {
               </div>
             </article>
             <button
-              className={`inline-block rounded bg-bonk-yellow px-8 py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
+              className={`inline-block rounded bg-bonk-yellow py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
                 isButtonDisabled
                   ? "hover:cursor-not-allowed opacity-50"
                   : "hover:shadow-xl"
