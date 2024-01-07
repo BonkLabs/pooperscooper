@@ -196,6 +196,11 @@ const AssetList: React.FC = () => {
         (id, error) => {}
       ).then(() => {
         setState(ApplicationStates.SCOOPED);
+      }).catch((err) => {
+        // TODO: @godzid - should we trigger an error banner here?
+        //                  this case only triggers when signing fails
+        console.log("Error signing for scoop!" + err)
+        setState(ApplicationStates.LOADED_QUOTES);
       });
     }
   };

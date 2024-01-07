@@ -322,42 +322,36 @@ async function sweepTokens(
   console.log(transactions);
 
   if (wallet.signAllTransactions) {
-    try {
-      const signedTransactions = await wallet.signAllTransactions(
-        transactions.map(([id, transaction]) => transaction)
-      );
+    const signedTransactions = await wallet.signAllTransactions(
+      transactions.map(([id, transaction]) => transaction)
+    );
 
-      console.log('Signed transactions:');
-      console.log(signedTransactions);
-      console.log(transactions);
+    console.log('Signed transactions:');
+    console.log(signedTransactions);
+    console.log(transactions);
 
-      await Promise.all(
-        signedTransactions.map(async (transaction, i) => {
-          const assetId = transactions[i][0];
-          transactionStateCallback(assetId, 'Scooping');
+    await Promise.all(
+      signedTransactions.map(async (transaction, i) => {
+        const assetId = transactions[i][0];
+        transactionStateCallback(assetId, 'Scooping');
 
-          try {
-            const result = await sendAndConfirmRawTransaction(
-              connection,
-              Buffer.from(transaction.serialize()),
-              {}
-            );
-            console.log('Transaction Success!');
-            transactionStateCallback(assetId, 'Scooped');
-            transactionIdCallback(assetId, result);
-          } catch (err) {
-            console.log('Transaction failed!');
-            console.log(err);
-            transactionStateCallback(assetId, 'Error');
-            errorCallback(assetId, err);
-          }
-        })
-      );
-    } catch (error) {
-      // Handle any error that occurs during signing
-      console.error('Error signing transactions:', error);
-      errorCallback('', 'Failed signing transactions!');
-    }
+        try {
+          const result = await sendAndConfirmRawTransaction(
+            connection,
+            Buffer.from(transaction.serialize()),
+            {}
+          );
+          console.log('Transaction Success!');
+          transactionStateCallback(assetId, 'Scooped');
+          transactionIdCallback(assetId, result);
+        } catch (err) {
+          console.log('Transaction failed!');
+          console.log(err);
+          transactionStateCallback(assetId, 'Error');
+          errorCallback(assetId, err);
+        }
+      })
+    );
   }
 }
 
