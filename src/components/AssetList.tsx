@@ -69,6 +69,10 @@ const AssetList: React.FC = () => {
   const [showZeroBalance, setShowZeroBalance] = useState(false);
   const [showStrict, setShowStrict] = useState(false);
 
+  // Sort
+  const [sortOption, setSortOption] = useState("");
+  const [ascending, setAscending] = useState(true);
+
   const isButtonDisabled = !Object.values(assetList).some(
     (entry) => entry.checked
   );
@@ -76,6 +80,180 @@ const AssetList: React.FC = () => {
   const selectedItems = Object.values(assetList).filter(
     (entry) => entry.checked
   );
+
+  const handleSelectAll = () => {
+    setSelectAll(!selectAll);
+
+    const updatedAssetListObject = Object.fromEntries(
+      Object.entries(assetList).map(([key, asset]) => [
+        key,
+        {
+          ...asset,
+          checked: !selectAll,
+        },
+      ])
+    );
+    setAssetList(updatedAssetListObject);
+  };
+
+  function updateAssetList(
+    updater: (arg: { [id: string]: AssetState }) => { [id: string]: AssetState }
+  ) {
+    setAssetList((aL) => {
+      console.log("Old state:");
+      console.log(assetList);
+      let newState = updater({ ...aL });
+      console.log("New state:");
+      console.log(newState);
+      return newState;
+    });
+  }
+
+  function reload() {
+    setAssetList((al) => {
+      const newList: { [id: string]: AssetState } = {};
+      Object.entries(newList).forEach(([key, asset]) => {
+        newList[key] = new AssetState(asset.asset);
+      });
+      return newList;
+    });
+    setState(ApplicationStates.LOADING);
+  }
+
+  /* Application startup */
+  /* 1.a: Load the wallet address */
+  if (wallet.connected && wallet.publicKey && connection) {
+    if (walletAddress != wallet.publicKey.toString()) {
+      setWalletAddress(wallet.publicKey.toString());
+    }
+  }
+
+  /* 1.b: Load the Jupiter Quote API */
+  const [jupiterQuoteApi, setQuoteApi] = React.useState<DefaultApi | null>();
+  React.useEffect(() => {
+    loadJupyterApi().then(([quoteApi, tokenMap]) => {
+      setTokens(tokenMap);
+      setQuoteApi(quoteApi);
+    });
+  }, []);
+
+  /* 2: Load information about users tokens, add any tokens to list */
+  React.useEffect(() => {
+    // Run only once
+    if (
+      walletAddress &&
+      jupiterQuoteApi &&
+      tokens &&
+      state == ApplicationStates.LOADING
+    ) {
+      setState(ApplicationStates.LOADED_JUPYTER);
+      setAssetList({});
+      findQuotes(
+        connection,
+        tokens,
+        BONK_TOKEN_MINT,
+        walletAddress,
+        jupiterQuoteApi,
+        (id, asset) => {
+          updateAssetList((s) => ({ ...s, [id]: new AssetState(asset) }));
+        },
+        (id, quote) => {
+          updateAssetList((aL) => {
+            aL[id].quote = quote;
+            return aL;
+          });
+        },
+        (id, swap) => {
+          updateAssetList((aL) => {
+            aL[id].swap = swap;
+            return aL;
+          });
+        },
+        (id, error) => {}
+      ).then(() => {
+        setState(ApplicationStates.LOADED_QUOTES);
+      });
+    }
+  }, [walletAddress, jupiterQuoteApi, tokens, state]);
+  /* End application startup */
+
+  /* Scoop button callback, clean all the tokens! */
+  const scoop = () => {
+    // Run only once
+    if (state == ApplicationStates.LOADED_QUOTES) {
+      setState(ApplicationStates.SCOOPING);
+      sweepTokens(
+        wallet,
+        connection,
+        Object.values(assetList),
+        (id: string, state: string) => {
+          updateAssetList((aL) => {
+            assetList[id].transactionState = state;
+            return aL;
+          });
+        },
+        (id, txid) => {},
+        (id, error) => {}
+      ).then(() => {
+        setState(ApplicationStates.SCOOPED);
+      });
+    }
+  };
+
+  /* Maintain counters of the total possible yield and yield from selected swaps */
+  var totalPossibleScoop = 0;
+  var totalScoop = 0;
+
+  Object.entries(assetList).forEach(([key, asset]) => {
+    if (asset.quote) {
+      if (asset.checked) {
+        totalScoop += Number(asset.quote.outAmount);
+      }
+      totalPossibleScoop += Number(asset.quote.outAmount);
+    }
+  });
+
+  if (!jupiterQuoteApi || !walletAddress) {
+    return <></>;
+  }
+
+  const filteredData = Object.entries(assetList).filter((entry) => {
+    const nameSearch = entry[1].asset.token.symbol
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const filterZeroBalance =
+      !showZeroBalance ||
+      Number(entry[1].asset?.balance) / 10 ** entry[1].asset.token.decimals ===
+        0;
+    const filterStrict = !showStrict || entry[1].asset.token.strict === true;
+
+    return nameSearch && filterZeroBalance && filterStrict;
+  });
+
+  const sortedAssets = [...filteredData].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortOption) {
+      case "symbol":
+        comparison = a[1].asset.token.symbol.localeCompare(
+          b[1].asset.token.symbol
+        );
+        break;
+      case "balance":
+        comparison = Number(a[1].asset.balance) - Number(b[1].asset.balance);
+        break;
+      case "scoopValue":
+        comparison =
+          Number(a[1].quote?.outAmount) - Number(b[1].quote?.outAmount);
+        break;
+      default:
+        break;
+    }
+
+    return ascending === true ? comparison : -comparison; // Adjust comparison based on sortOrder
+  });
+
+  console.log("FILTERED DATA HERE", filteredData);
 
   const SummaryModal = () => {
     return (
@@ -281,156 +459,6 @@ const AssetList: React.FC = () => {
     );
   };
 
-  const handleSelectAll = () => {
-    setSelectAll(!selectAll);
-
-    const updatedAssetListObject = Object.fromEntries(
-      Object.entries(assetList).map(([key, asset]) => [
-        key,
-        {
-          ...asset,
-          checked: !selectAll,
-        },
-      ])
-    );
-    setAssetList(updatedAssetListObject);
-  };
-
-  function updateAssetList(
-    updater: (arg: { [id: string]: AssetState }) => { [id: string]: AssetState }
-  ) {
-    setAssetList((aL) => {
-      console.log("Old state:");
-      console.log(assetList);
-      let newState = updater({ ...aL });
-      console.log("New state:");
-      console.log(newState);
-      return newState;
-    });
-  }
-
-  function reload() {
-    setAssetList((al) => {
-      const newList: { [id: string]: AssetState } = {};
-      Object.entries(newList).forEach(([key, asset]) => {
-        newList[key] = new AssetState(asset.asset);
-      });
-      return newList;
-    });
-    setState(ApplicationStates.LOADING);
-  }
-
-  /* Application startup */
-  /* 1.a: Load the wallet address */
-  if (wallet.connected && wallet.publicKey && connection) {
-    if (walletAddress != wallet.publicKey.toString()) {
-      setWalletAddress(wallet.publicKey.toString());
-    }
-  }
-
-  /* 1.b: Load the Jupiter Quote API */
-  const [jupiterQuoteApi, setQuoteApi] = React.useState<DefaultApi | null>();
-  React.useEffect(() => {
-    loadJupyterApi().then(([quoteApi, tokenMap]) => {
-      setTokens(tokenMap);
-      setQuoteApi(quoteApi);
-    });
-  }, []);
-
-  /* 2: Load information about users tokens, add any tokens to list */
-  React.useEffect(() => {
-    // Run only once
-    if (
-      walletAddress &&
-      jupiterQuoteApi &&
-      tokens &&
-      state == ApplicationStates.LOADING
-    ) {
-      setState(ApplicationStates.LOADED_JUPYTER);
-      setAssetList({});
-      findQuotes(
-        connection,
-        tokens,
-        BONK_TOKEN_MINT,
-        walletAddress,
-        jupiterQuoteApi,
-        (id, asset) => {
-          updateAssetList((s) => ({ ...s, [id]: new AssetState(asset) }));
-        },
-        (id, quote) => {
-          updateAssetList((aL) => {
-            aL[id].quote = quote;
-            return aL;
-          });
-        },
-        (id, swap) => {
-          updateAssetList((aL) => {
-            aL[id].swap = swap;
-            return aL;
-          });
-        },
-        (id, error) => {}
-      ).then(() => {
-        setState(ApplicationStates.LOADED_QUOTES);
-      });
-    }
-  }, [walletAddress, jupiterQuoteApi, tokens, state]);
-  /* End application startup */
-
-  /* Scoop button callback, clean all the tokens! */
-  const scoop = () => {
-    // Run only once
-    if (state == ApplicationStates.LOADED_QUOTES) {
-      setState(ApplicationStates.SCOOPING);
-      sweepTokens(
-        wallet,
-        connection,
-        Object.values(assetList),
-        (id: string, state: string) => {
-          updateAssetList((aL) => {
-            assetList[id].transactionState = state;
-            return aL;
-          });
-        },
-        (id, txid) => {},
-        (id, error) => {}
-      ).then(() => {
-        setState(ApplicationStates.SCOOPED);
-      });
-    }
-  };
-
-  /* Maintain counters of the total possible yield and yield from selected swaps */
-  var totalPossibleScoop = 0;
-  var totalScoop = 0;
-
-  Object.entries(assetList).forEach(([key, asset]) => {
-    if (asset.quote) {
-      if (asset.checked) {
-        totalScoop += Number(asset.quote.outAmount);
-      }
-      totalPossibleScoop += Number(asset.quote.outAmount);
-    }
-  });
-
-  if (!jupiterQuoteApi || !walletAddress) {
-    return <></>;
-  }
-
-  const filteredData = Object.entries(assetList).filter((entry) => {
-    const nameSearch = entry[1].asset.token.symbol
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    const filterZeroBalance =
-      !showZeroBalance ||
-      Number(entry[1].asset?.balance) / 10 ** entry[1].asset.token.decimals ===
-        0;
-    const filterStrict = !showStrict || entry[1].asset.token.strict === true;
-
-    return nameSearch && filterZeroBalance && filterStrict;
-  });
-  console.log("FILTERED DATA HERE", filteredData);
-
   const ScoopList = () => {
     return (
       <div className="grid lg:grid-cols-[2fr_1fr] gap-4">
@@ -511,7 +539,7 @@ const AssetList: React.FC = () => {
                     </td>
                   </tr>
                 )}
-              {filteredData.map(([key, entry]) => {
+              {sortedAssets.map(([key, entry]) => {
                 return (
                   <tr
                     key={key}
@@ -819,6 +847,8 @@ const AssetList: React.FC = () => {
                           type="checkbox"
                           id="AcceptConditions"
                           className="peer sr-only"
+                          // value={ascending}
+                          onClick={() => setAscending(!ascending)}
                         />
 
                         <span className="absolute inset-0 m-auto h-2 rounded-full bg-gray-300"></span>
@@ -837,7 +867,10 @@ const AssetList: React.FC = () => {
                     <li>
                       <label className="inline-flex items-center gap-2">
                         <input
-                          type="checkbox"
+                          type="radio"
+                          name="sort"
+                          value="symbol"
+                          onClick={(e) => setSortOption("symbol")}
                           className="h-5 w-5 rounded border-gray-300"
                         />
 
@@ -850,7 +883,10 @@ const AssetList: React.FC = () => {
                     <li>
                       <label className="inline-flex items-center gap-2">
                         <input
-                          type="checkbox"
+                          type="radio"
+                          name="sort"
+                          value="balance"
+                          onClick={(e) => setSortOption("balance")}
                           className="h-5 w-5 rounded border-gray-300"
                         />
 
@@ -863,7 +899,10 @@ const AssetList: React.FC = () => {
                     <li>
                       <label className="inline-flex items-center gap-2">
                         <input
-                          type="checkbox"
+                          type="radio"
+                          name="sort"
+                          value="scoopValue"
+                          onClick={(e) => setSortOption("scoopValue")}
                           className="h-5 w-5 rounded border-gray-300"
                         />
 
