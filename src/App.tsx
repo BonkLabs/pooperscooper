@@ -59,14 +59,24 @@ const Content: FC = () => {
   const wallet = useWallet();
 
   return (
-    <div className="bg-gradient-to-b from-[#FC8E03] to-[#FFD302]  p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen">
+    <div className="bg-gradient-to-b from-[#FC8E03] to-[#FFD302] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen relative">
       <Header />
       <Info />
-      {wallet && connection && wallet.publicKey ? (
-        <AssetList />
-      ) : (
-        <div className="text-white">Please connect your wallet</div>
-      )}
+      <div className="min-h-[30vh]">
+        {wallet && connection && wallet.publicKey ? (
+          <AssetList />
+        ) : (
+          <div className="text-white text-center pt-4 font-bold text-2xl italic h-[30vh] flex items-center justify-center relative z-40">
+            Connect your wallet to scoop up unwanted assets
+          </div>
+        )}
+        <img
+          src={`${window.location.origin}/doodie/images/bonk_logo_transparent.png`}
+          width={500}
+          className="absolute bottom-0 left-0"
+          alt="Bonk Logo"
+        />
+      </div>
     </div>
   );
 };

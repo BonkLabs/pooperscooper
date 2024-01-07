@@ -194,14 +194,16 @@ const AssetList: React.FC = () => {
         },
         (id, txid) => {},
         (id, error) => {}
-      ).then(() => {
-        setState(ApplicationStates.SCOOPED);
-      }).catch((err) => {
-        // TODO: @godzid - should we trigger an error banner here?
-        //                  this case only triggers when signing fails
-        console.log("Error signing for scoop!" + err)
-        setState(ApplicationStates.LOADED_QUOTES);
-      });
+      )
+        .then(() => {
+          setState(ApplicationStates.SCOOPED);
+        })
+        .catch((err) => {
+          // TODO: @godzid - should we trigger an error banner here?
+          //                  this case only triggers when signing fails
+          console.log("Error signing for scoop!" + err);
+          setState(ApplicationStates.LOADED_QUOTES);
+        });
     }
   };
 
@@ -251,7 +253,8 @@ const AssetList: React.FC = () => {
         break;
       case "scoopValue":
         comparison =
-          (Number(a[1].quote?.outAmount) ?? 0) - (Number(b[1].quote?.outAmount) ?? 0);
+          (Number(a[1].quote?.outAmount) ?? 0) -
+          (Number(b[1].quote?.outAmount) ?? 0);
         break;
       default:
         break;
@@ -959,7 +962,7 @@ const AssetList: React.FC = () => {
   return (
     <>
       {" "}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 z-30 relative">
         <SummaryModal />
         {ScoopList()}
       </div>
