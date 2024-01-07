@@ -240,11 +240,13 @@ const AssetList: React.FC = () => {
         );
         break;
       case "balance":
-        comparison = Number(a[1].asset.balance) - Number(b[1].asset.balance);
+        comparison =
+          Number(a[1].asset.balance) / 10 ** a[1].asset.token.decimals -
+          Number(b[1].asset.balance) / 10 ** b[1].asset.token.decimals;
         break;
       case "scoopValue":
         comparison =
-          Number(a[1].quote?.outAmount) - Number(b[1].quote?.outAmount);
+          (Number(a[1].quote?.outAmount) ?? 0) - (Number(b[1].quote?.outAmount) ?? 0);
         break;
       default:
         break;
