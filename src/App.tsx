@@ -59,7 +59,7 @@ const Content: FC = () => {
   const wallet = useWallet();
 
   return (
-    <div className="bg-[#091e05] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen">
+    <div className="bg-gradient-to-b from-[#FC8E03] to-[#FFD302]  p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen">
       <Header />
       <Info />
       {wallet && connection && wallet.publicKey ? (

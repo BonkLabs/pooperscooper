@@ -880,7 +880,7 @@ const AssetList: React.FC = () => {
               }`}
             >
               <div
-                className="bg-[#23617B] text-white text-center py-2 rounded hover:opacity-65 hover:cursor-pointer max-w-max px-8 flex items-center gap-2"
+                className="bg-[#FF5C01] text-white text-center py-2 rounded hover:opacity-65 hover:cursor-pointer max-w-max px-8 flex items-center gap-2"
                 onClick={(x) => {
                   reload();
                 }}

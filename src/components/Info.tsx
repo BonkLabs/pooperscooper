@@ -23,12 +23,12 @@ const Info = () => {
   ];
 
   return (
-    <section className="bg-[#004f2d] text-white rounded-3xl relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16 mb-4">
+    <section className="bg-[#FFD302] text-white rounded-3xl relative px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16 mb-4">
       <div className="max-w-screen-xl">
         <div className="max-w-xl">
           <h2 className="text-3xl font-bold sm:text-4xl">Doodie Bag</h2>
 
-          <p className="mt-4 text-gray-300">
+          <p className="mt-4 text-gray-800">
             Airdrops and adverts clutter your wallet. This tool allows you to
             quickly "Scoop" all your unwanted assets into Bonk via jup.ag Token
             accounts for scooped assets are closed, returning the Sol rent to
@@ -48,7 +48,7 @@ const Info = () => {
                 <div>
                   <h2 className="text-lg font-bold">{title}</h2>
 
-                  <p className="mt-1 text-sm text-gray-300">{description}</p>
+                  <p className="mt-1 text-sm text-gray-800">{description}</p>
                 </div>
               </div>
             );
