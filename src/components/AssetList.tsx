@@ -12,6 +12,8 @@ import {
   SwapInstructionsResponse,
   QuoteResponse,
 } from "@jup-ag/api";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BONK_TOKEN_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
 
@@ -199,8 +201,8 @@ const AssetList: React.FC = () => {
           setState(ApplicationStates.SCOOPED);
         })
         .catch((err) => {
-          // TODO: @godzid - should we trigger an error banner here?
-          //                  this case only triggers when signing fails
+          const notify = () => toast.error("User rejected transaction!");
+          notify();
           console.log("Error signing for scoop!" + err);
           setState(ApplicationStates.LOADED_QUOTES);
         });
@@ -985,6 +987,7 @@ const AssetList: React.FC = () => {
     <>
       {" "}
       <div className="flex flex-col gap-4 z-30 relative">
+        <ToastContainer />
         <SummaryModal />
         {ScoopList()}
       </div>
