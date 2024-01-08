@@ -35,10 +35,11 @@ const Info = () => {
           </h2>
 
           <p className="mt-4 text-gray-800 font-semibold tracking-wide">
-            Airdrops and adverts clutter your wallet. This tool allows you to
-            quickly "Scoop" all your unwanted assets into Bonk via jup.ag Token
-            accounts for scooped assets are closed, returning the Sol rent to
-            you.
+            Airdrops and adverts clutter your wallet. This tool allows you to quickly
+            "Scoop" all your unwanted assets into Bonk via
+             <a href="https://jup.ag/"> jup.ag</a> swaps.<br/>
+            Token accounts for scooped assets are closed, returning the rent to you as Solana.
+            (Typically 0.0024 Solana per account closed)
           </p>
         </div>
 
