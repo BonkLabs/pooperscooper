@@ -475,6 +475,11 @@ const AssetList: React.FC = () => {
             >
               Confirm
             </button>
+            {state === ApplicationStates.SCOOPED && (
+              <div className="italic text-sm text-center">
+                Transaction has been processed, please refresh assets
+              </div>
+            )}
           </div>
         </div>
       </div>
