@@ -34,7 +34,7 @@ export default App;
 
 const Context: FC<{ children: ReactNode }> = ({ children }) => {
   const network =
-    "https://solana-mainnet.g.alchemy.com/v2/sr4A9e6t54u1GIYJGm_egFTAIcmjym4U";
+    "https://multi-compatible-dream.solana-mainnet.quiknode.pro/ab10715a148f3ffb855f7e7665821f318f1c2cb8/";
 
   // You can also provide a custom RPC endpoint.
   const endpoint = React.useMemo(() => network, [network]);
