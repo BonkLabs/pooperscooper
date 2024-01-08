@@ -228,24 +228,27 @@ async function buildBurnTransaction(
       lookup = addressLookupTableAccounts;
     }
 
-    if (asset.asset.programId == TOKEN_2022_PROGRAM_ID && !asset.swap) {
-      console.log('Adding burn instruction');
-      let burnAmount;
-      if (asset.quote) {
-        burnAmount = asset.asset.balance - BigInt(asset.quote.inAmount);
-      } else {
-        burnAmount = asset.asset.balance;
-      }
+    let burnAmount;
+    if (asset.quote) {
+      burnAmount = asset.asset.balance - BigInt(asset.quote.inAmount);
+    } else {
+      burnAmount = asset.asset.balance;
+    }
 
+    if (burnAmount > 0) {
+      console.log('Adding burn instruction');
       const burnIx = createBurnInstruction(
         asset.asset.ataId,
         new PublicKey(asset.asset.token.address),
         wallet.publicKey,
         burnAmount,
         [],
-        TOKEN_2022_PROGRAM_ID
+        asset.asset.programId
       );
       instructions.push(burnIx);
+    }
+
+    if (asset.asset.programId == TOKEN_2022_PROGRAM_ID && !asset.swap) {
       console.log('Adding harvest instruction');
       const harvestFeesIx = createHarvestWithheldTokensToMintInstruction(
         new PublicKey(asset.asset.token.address),
