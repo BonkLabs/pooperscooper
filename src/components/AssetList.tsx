@@ -253,8 +253,8 @@ const AssetList: React.FC = () => {
         break;
       case "scoopValue":
         comparison =
-          (Number(a[1].quote?.outAmount) ?? 0) -
-          (Number(b[1].quote?.outAmount) ?? 0);
+          ((Number(a[1].quote?.outAmount) ?? 0) || 0) -
+          ((Number(b[1].quote?.outAmount) ?? 0) || 0);
         break;
       default:
         break;
@@ -857,7 +857,6 @@ const AssetList: React.FC = () => {
                           type="checkbox"
                           id="AcceptConditions"
                           className="peer sr-only"
-                          // value={ascending}
                           onClick={() => setAscending(!ascending)}
                         />
 
