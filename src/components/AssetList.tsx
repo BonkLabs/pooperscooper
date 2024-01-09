@@ -91,7 +91,7 @@ const AssetList: React.FC = () => {
         key,
         {
           ...asset,
-          checked: !selectAll,
+          checked: !selectAll && filteredData.some((entry) => entry[0] === key), // updated: only selects "all" from currently filtered data
         },
       ])
     );
