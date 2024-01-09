@@ -54,7 +54,8 @@ interface TokenBalance {
   ataId: PublicKey;
 }
 
-const forbiddenTokens = ["Bonk", "USDC", "USDT"];
+const liquidStableTokens = ["mSOL", "JitoSOL", "bSOL", "mrgnLST", "jSOL", "stSOL", "scnSOL"];
+const forbiddenTokens = ["Bonk", "USDC", "USDT"].concat(liquidStableTokens);
 
 /**
  * Gets token accounts including standard and token22 accounts
