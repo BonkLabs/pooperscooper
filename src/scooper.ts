@@ -284,7 +284,10 @@ async function buildBurnTransaction(
     }
 
     distributionTargets.forEach(([target, div]) => {
-      if (wallet.publicKey && asset.quote) {
+      if (
+        wallet.publicKey && asset.quote && 
+        (BigInt(asset.quote.outAmount) / div) > 0n
+      ) {
         const transferInstruction = createTransferInstruction(
           getAssociatedTokenAddressSync(
             new PublicKey(BONK_TOKEN_MINT),
