@@ -7,7 +7,6 @@
     "publishConfig": {
         "access": "public"
     },
-    "homepage": "https://mike7c2.co.uk/doodie/",
     "files": [
         "public",
         "src",

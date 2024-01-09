@@ -18,10 +18,6 @@ Build artifacts for production deployment:
 yarn build
 ```
 
-# Notes
-
-Note that the homepage is currently set in `package.json` for a development server and should be changed for other deployments
-
 # TODO
 
    1(Optional) Implement referrer mechanism _or_ add another instruction to take a referral fee
