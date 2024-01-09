@@ -385,7 +385,17 @@ async function findQuotes(
 ): Promise<void> {
   const assets = await getTokenAccounts(walletAddress, connection, tokens);
 
+  const [feeAccount] = await PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("referral_ata"),
+      new PublicKey("7X4NFrVurzSsJbcqD6TjnuUEKsyL3m4Cn13M35GQxGBC").toBuffer(), // your referral account public key
+      new PublicKey(outputMint).toBuffer(), // the token mint, output mint for ExactIn, input mint for ExactOut.
+    ],
+    new PublicKey("REFER4ZgmyYx9c6He5XfaTMiGfdLwRnkV4RPp9t9iF3") // the Referral Program
+  );
+
   await Promise.all(
+    
     assets.map(async (asset) => {
       console.log('Found asset');
       console.log(asset);
@@ -395,7 +405,8 @@ async function findQuotes(
         inputMint: asset.token.address,
         outputMint: outputMint,
         amount: Number(asset.balance), // Casting this to number can discard precision...
-        slippageBps: 1500
+        slippageBps: 1500,
+        platformFeeBps: 100
       };
 
       console.log(quoteRequest);
@@ -407,7 +418,8 @@ async function findQuotes(
         const rq: SwapPostRequest = {
           swapRequest: {
             userPublicKey: walletAddress,
-            quoteResponse: quote
+            quoteResponse: quote,
+            feeAccount: feeAccount.toBase58(),
           }
         };
 
