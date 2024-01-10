@@ -6,7 +6,8 @@ import {
   TokenInfo,
   TokenBalance,
   loadJupyterApi,
-  BONK_TOKEN_MINT
+  BONK_TOKEN_MINT,
+  getAssetBurnReturn
 } from "../scooper";
 import {
   DefaultApi,
@@ -15,6 +16,8 @@ import {
 } from "@jup-ag/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { burn } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 enum ApplicationStates {
   LOADING = 0,
@@ -513,7 +516,13 @@ const AssetList: React.FC = () => {
                   Balance
                 </th>
                 <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
-                  Scoop Value
+                  Scoop Value (Bonk)
+                </th>
+                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
+                  Scoop Value (Sol)
+                </th>
+                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
+                  Fee (Bonk)
                 </th>
                 <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
                   Strict
@@ -570,6 +579,7 @@ const AssetList: React.FC = () => {
                   </tr>
                 )}
               {sortedAssets.map(([key, entry]) => {
+                let burnReturn = getAssetBurnReturn(entry);
                 return (
                   <tr
                     key={key}
@@ -643,10 +653,16 @@ const AssetList: React.FC = () => {
                     <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
                       {entry.quote?.outAmount
                         ? (
-                            Number(entry.quote.outAmount) /
+                            Number(burnReturn.bonkAmount) /
                             10 ** 5
                           ).toLocaleString()
                         : "No quote"}
+                    </td>
+                    <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
+                      {( Number(burnReturn.lamportsAmount) / LAMPORTS_PER_SOL ).toLocaleString()}
+                    </td>
+                    <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
+                      {( Number(burnReturn.feeAmount) / 10 ** 5 ).toLocaleString()}
                     </td>
                     <td className="whitespace-nowrap p-4 text-gray-700 text-right">
                       {entry.asset?.token.strict && <p>Strict</p>}

@@ -39,7 +39,8 @@ const Info = () => {
             "Scoop" all your unwanted assets into Bonk via
              <a href="https://jup.ag/"> jup.ag</a> swaps.<br/>
             Token accounts for scooped assets are closed, returning the rent to you as Solana.
-            (Typically 0.0024 Solana per account closed)
+            (Typically 0.0024 Solana per account closed).
+            A 0.1% fee is currently taken from all swaps, no fee is taken from account closures.
           </p>
         </div>
 
