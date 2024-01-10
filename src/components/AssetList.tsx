@@ -6,6 +6,7 @@ import {
   TokenInfo,
   TokenBalance,
   loadJupyterApi,
+  BONK_TOKEN_MINT
 } from "../scooper";
 import {
   DefaultApi,
@@ -14,8 +15,6 @@ import {
 } from "@jup-ag/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-const BONK_TOKEN_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
 
 enum ApplicationStates {
   LOADING = 0,
