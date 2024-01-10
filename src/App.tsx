@@ -71,7 +71,7 @@ const Content: FC = () => {
           </div>
         )}
         <img
-          src={`${window.location.origin}/doodie/images/bonk_logo_transparent.png`}
+          src={`/images/bonk_logo_transparent.png`}
           width={500}
           className="absolute bottom-0 left-0"
           alt="Bonk Logo"
