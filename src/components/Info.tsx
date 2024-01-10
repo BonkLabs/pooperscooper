@@ -4,25 +4,25 @@ const Info = () => {
       title: "Wait for assets to load",
       description:
         "Scooper will check your wallet for assets that can be swapped and accounts that can be closed and present them in a list below",
-      image: `${window.location.origin}/doodie/images/1.png`,
+      image: `/images/1.png`,
     },
     {
       title: "Select assets for Scooping",
       description:
         "Review the assets in the list and check any assets you would like to Scoop, then press scoop. Or use Scoop all",
-      image: `${window.location.origin}/doodie/images/2.png`,
+      image: `/images/2.png`,
     },
     {
       title: "Review summary",
       description:
         "Make sure only assets you want to Scoop are shown in the Summary. Press confirm and then sign the transaction if you are satisfied",
-      image: `${window.location.origin}/doodie/images/3.png`,
+      image: `/images/3.png`,
     },
     {
       title: "Scooper scoops",
       description:
         "Scooper will now issue the transactions for each asset to be scooped and let you know when the process is complete.",
-      image: `${window.location.origin}/doodie/images/4.png`,
+      image: `/images/4.png`,
     },
   ];
 
@@ -35,11 +35,12 @@ const Info = () => {
           </h2>
 
           <p className="mt-4 text-gray-800 font-semibold tracking-wide">
-            Airdrops and adverts clutter your wallet. This tool allows you to quickly
-            "Scoop" all your unwanted assets into Bonk via
-             <a href="https://jup.ag/"> jup.ag</a> swaps.<br/>
-            Token accounts for scooped assets are closed, returning the rent to you as Solana.
-            (Typically 0.0024 Solana per account closed)
+            Airdrops and adverts clutter your wallet. This tool allows you to
+            quickly "Scoop" all your unwanted assets into Bonk via
+            <a href="https://jup.ag/"> jup.ag</a> swaps.
+            <br />
+            Token accounts for scooped assets are closed, returning the rent to
+            you as Solana. (Typically 0.0024 Solana per account closed)
           </p>
         </div>
 
