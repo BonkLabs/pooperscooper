@@ -13,7 +13,9 @@ import {
   createCloseAccountInstruction,
   TOKEN_2022_PROGRAM_ID,
   createHarvestWithheldTokensToMintInstruction,
-  createBurnInstruction
+  createBurnInstruction,
+  createTransferInstruction,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token';
 import { WalletContextState } from '@solana/wallet-adapter-react';
 import { Buffer } from 'buffer';
@@ -54,8 +56,19 @@ interface TokenBalance {
   ataId: PublicKey;
 }
 
+const BONK_TOKEN_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
+
 const liquidStableTokens = ["mSOL", "JitoSOL", "bSOL", "mrgnLST", "jSOL", "stSOL", "scnSOL"];
 const forbiddenTokens = ["Bonk", "USDC", "USDT"].concat(liquidStableTokens);
+const distributionTargets: [PublicKey, bigint][] = [
+  [
+    getAssociatedTokenAddressSync(
+      new PublicKey(BONK_TOKEN_MINT),
+      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // mike7c2
+    ),
+    1000n // 0.1%
+  ]
+];
 
 /**
  * Gets token accounts including standard and token22 accounts
@@ -270,6 +283,24 @@ async function buildBurnTransaction(
       instructions.push(closeAccountIx);
     }
 
+    distributionTargets.forEach(([target, div]) => {
+      if (
+        wallet.publicKey && asset.quote && 
+        (BigInt(asset.quote.outAmount) / div) > 0n
+      ) {
+        const transferInstruction = createTransferInstruction(
+          getAssociatedTokenAddressSync(
+            new PublicKey(BONK_TOKEN_MINT),
+            wallet.publicKey
+          ),
+          target,
+          wallet.publicKey,
+          BigInt(asset.quote.outAmount) / div
+        );
+        instructions.push(transferInstruction);
+      }
+    });
+
     console.log(instructions);
     if (instructions.length > 0) {
       const message = new TransactionMessage({
@@ -453,5 +484,5 @@ async function loadJupyterApi(): Promise<
   return [quoteApi, tokenMap];
 }
 
-export { getTokenAccounts, sweepTokens, findQuotes, loadJupyterApi };
+export { getTokenAccounts, sweepTokens, findQuotes, loadJupyterApi, BONK_TOKEN_MINT };
 export type { TokenInfo, TokenBalance };
