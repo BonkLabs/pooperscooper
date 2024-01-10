@@ -525,7 +525,7 @@ const AssetList: React.FC = () => {
                   Fee (Bonk)
                 </th>
                 <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
-                  Strict
+                  Token List
                 </th>
                 {/* <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg">
                     Status
