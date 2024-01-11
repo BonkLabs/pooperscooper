@@ -550,11 +550,11 @@ const AssetList: React.FC = () => {
                       />
                     </svg>
                     <div className="hidden bg-black text-white text-center text-xs rounded-lg py-2 absolute z-10 group-hover:block top-6 px-3 -right-6 w-64 md:w-96 hover:cursor-auto text-wrap">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                      Nisi, accusamus impedit a recusandae architecto voluptatum
-                      nostrum natus, quos nam libero quisquam excepturi sequi
-                      optio adipisci voluptatem, dicta maxime repudiandae
-                      exercitationem.
+                      <a
+                          className="flex gap-4 items-right hover:font-bold"
+                          href={`https://station.jup.ag/docs/token-list/token-list-api#strict-and-all-lists`}
+                          target="_blank"
+                      >Jupiter token list</a>
                     </div>
                   </div>
                 </th>
