@@ -123,7 +123,7 @@ function getAssetBurnReturn(asset: Asset): {burnAmount: bigint, bonkAmount: bigi
 
   let totalFee = getTotalFee();
 
-  let feeAmount = bonkAmount / BigInt(100 / totalFee);
+  let feeAmount = bonkAmount / BigInt(Math.floor(100 / totalFee));
   bonkAmount -= feeAmount;
 
   return {
@@ -350,7 +350,7 @@ async function buildBurnTransaction(
     distributionTargets.forEach(([target, sharePercent]) => {
       if (
         wallet.publicKey && asset.quote && 
-        (BigInt(asset.quote.outAmount) / BigInt(100 / sharePercent)) > 0n
+        (BigInt(asset.quote.outAmount) / BigInt(Math.floor(100 / sharePercent))) > 0n
       ) {
         const transferInstruction = createTransferInstruction(
           getAssociatedTokenAddressSync(
@@ -359,7 +359,7 @@ async function buildBurnTransaction(
           ),
           target,
           wallet.publicKey,
-          (BigInt(asset.quote.outAmount) / BigInt(100 / sharePercent))
+          (BigInt(asset.quote.outAmount) / BigInt(Math.floor(100 / sharePercent)))
         );
         instructions.push(transferInstruction);
       }
