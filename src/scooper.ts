@@ -60,15 +60,41 @@ const BONK_TOKEN_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
 
 const liquidStableTokens = ["mSOL", "JitoSOL", "bSOL", "mrgnLST", "jSOL", "stSOL", "scnSOL"];
 const forbiddenTokens = ["Bonk", "USDC", "USDT"].concat(liquidStableTokens);
-const distributionTargets: [PublicKey, bigint][] = [
+
+const distributionTargets: [PublicKey, number][] = [
   [
     getAssociatedTokenAddressSync(
       new PublicKey(BONK_TOKEN_MINT),
       new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // mike7c2
     ),
-    1000n // 0.1%
+    0.1 // 0.1%
+  ],
+  [
+    getAssociatedTokenAddressSync(
+      new PublicKey(BONK_TOKEN_MINT),
+      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // TODO @ tendies maintenance address here
+    ),
+    0.1 // 0.1%
+  ],
+  [
+    getAssociatedTokenAddressSync(
+      new PublicKey(BONK_TOKEN_MINT),
+      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // TODO @ tendies BONK address here
+    ),
+    0.1 // 0.1%
   ]
 ];
+
+/**
+ * Get the total fee amount
+ */
+function getTotalFee(): number {
+  let totalFee = 0.0;
+  distributionTargets.forEach(([target, feePercent]) => {
+    totalFee += feePercent;
+  });
+  return totalFee;
+}
 
 /**
  * Returns the expected outputs of burning an asset
@@ -95,16 +121,10 @@ function getAssetBurnReturn(asset: Asset): {burnAmount: bigint, bonkAmount: bigi
     lamportsAmount = BigInt(2400000);
   }
 
-  let totalFeeDiv = 0n;
-  distributionTargets.forEach(([target, feeDiv]) => {
-    totalFeeDiv += feeDiv;
-  });
+  let totalFee = getTotalFee();
 
-  let feeAmount = 0n;
-  if (totalFeeDiv > 0) {
-    feeAmount = bonkAmount / totalFeeDiv;
-    bonkAmount -= feeAmount;
-  }
+  let feeAmount = bonkAmount / BigInt(100 / totalFee);
+  bonkAmount -= feeAmount;
 
   return {
     burnAmount: burnAmount,
@@ -327,10 +347,10 @@ async function buildBurnTransaction(
       instructions.push(closeAccountIx);
     }
 
-    distributionTargets.forEach(([target, div]) => {
+    distributionTargets.forEach(([target, sharePercent]) => {
       if (
         wallet.publicKey && asset.quote && 
-        (BigInt(asset.quote.outAmount) / div) > 0n
+        (BigInt(asset.quote.outAmount) / BigInt(100 / sharePercent)) > 0n
       ) {
         const transferInstruction = createTransferInstruction(
           getAssociatedTokenAddressSync(
@@ -339,7 +359,7 @@ async function buildBurnTransaction(
           ),
           target,
           wallet.publicKey,
-          BigInt(asset.quote.outAmount) / div
+          (BigInt(asset.quote.outAmount) / BigInt(100 / sharePercent))
         );
         instructions.push(transferInstruction);
       }
@@ -528,5 +548,5 @@ async function loadJupyterApi(): Promise<
   return [quoteApi, tokenMap];
 }
 
-export { getTokenAccounts, getAssetBurnReturn, sweepTokens, findQuotes, loadJupyterApi, BONK_TOKEN_MINT };
+export { getTokenAccounts, getAssetBurnReturn, sweepTokens, findQuotes, loadJupyterApi, getTotalFee, BONK_TOKEN_MINT };
 export type { TokenInfo, TokenBalance };

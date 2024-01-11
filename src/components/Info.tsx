@@ -1,3 +1,5 @@
+import { getTotalFee } from "../scooper";
+
 const Info = () => {
   const steps = [
     {
@@ -37,10 +39,10 @@ const Info = () => {
           <p className="mt-4 text-gray-800 font-semibold tracking-wide">
             Airdrops and adverts clutter your wallet. This tool allows you to quickly
             "Scoop" all your unwanted assets into $BONK via
-             <a href="https://jup.ag/"> jup.ag</a> swaps.<br/>
+             <a href="https://jup.ag/"> <u>Jupiter swaps.</u></a> <br/>
             Token accounts for scooped assets are closed, returning the rent to you as Solana.
             (Typically 0.0024 Solana per account closed).
-            A 0.1% fee is currently taken from all swaps, no fee is taken from account closures.
+            A {getTotalFee().toLocaleString()}% fee is currently taken from all swaps, no fee is taken from account closures.
           </p>
         </div>
 
