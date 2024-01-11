@@ -74,7 +74,7 @@ const Content: FC = () => {
           src={`/images/bonk_logo_transparent.png`}
           width={500}
           className="absolute bottom-0 left-0"
-          alt="Bonk Logo"
+          alt="$BONK Logo"
         />
       </div>
     </div>
