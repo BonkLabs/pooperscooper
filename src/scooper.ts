@@ -71,6 +71,50 @@ const distributionTargets: [PublicKey, bigint][] = [
 ];
 
 /**
+ * Returns the expected outputs of burning an asset
+ *
+ * @param asset The asset to calculate returns for
+ * @returns Object containing information about return/fees
+ */
+function getAssetBurnReturn(asset: Asset): {burnAmount: bigint, bonkAmount: bigint, lamportsAmount: bigint, feeAmount: bigint} {
+  var burnAmount: bigint;
+  var bonkAmount: bigint;
+  var lamportsAmount: bigint;
+
+  if (asset.quote) {
+    burnAmount = asset.asset.balance - BigInt(asset.quote.inAmount);
+    bonkAmount = BigInt(asset.quote.outAmount);
+    if (asset.asset.programId == TOKEN_2022_PROGRAM_ID) {
+      lamportsAmount = BigInt(0);
+    } else {
+      lamportsAmount = BigInt(2400000);
+    }
+  } else {
+    burnAmount = asset.asset.balance;
+    bonkAmount = BigInt(0);
+    lamportsAmount = BigInt(2400000);
+  }
+
+  let totalFeeDiv = 0n;
+  distributionTargets.forEach(([target, feeDiv]) => {
+    totalFeeDiv += feeDiv;
+  });
+
+  let feeAmount = 0n;
+  if (totalFeeDiv > 0) {
+    feeAmount = bonkAmount / totalFeeDiv;
+    bonkAmount -= feeAmount;
+  }
+
+  return {
+    burnAmount: burnAmount,
+    bonkAmount: bonkAmount,
+    lamportsAmount: lamportsAmount,
+    feeAmount: feeAmount
+  }
+}
+
+/**
  * Gets token accounts including standard and token22 accounts
  *
  * Returns a list of all token accounts which match a "known" token in tokenList
@@ -484,5 +528,5 @@ async function loadJupyterApi(): Promise<
   return [quoteApi, tokenMap];
 }
 
-export { getTokenAccounts, sweepTokens, findQuotes, loadJupyterApi, BONK_TOKEN_MINT };
+export { getTokenAccounts, getAssetBurnReturn, sweepTokens, findQuotes, loadJupyterApi, BONK_TOKEN_MINT };
 export type { TokenInfo, TokenBalance };
