@@ -516,13 +516,13 @@ const AssetList: React.FC = () => {
                   Balance
                 </th>
                 <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
-                  Scoop Value (Bonk)
+                  Scoop Value ($BONK)
                 </th>
                 <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
                   Scoop Value (Sol)
                 </th>
                 <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
-                  Fee (Bonk)
+                  Fee ($BONK)
                 </th>
                 <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right flex gap-4 justify-end">
                   Token List
