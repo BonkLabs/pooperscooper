@@ -65,23 +65,30 @@ const distributionTargets: [PublicKey, number][] = [
   [
     getAssociatedTokenAddressSync(
       new PublicKey(BONK_TOKEN_MINT),
-      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // mike7c2
+      new PublicKey("CbX9HYvyHBa2RuotGN8Y8hCKow6xppdrhAh6RL6i2BEf") // mike7c2 fees
     ),
-    0.1 // 0.1%
+    0.15333333333333332 // 0.15333333333333332%
   ],
   [
     getAssociatedTokenAddressSync(
       new PublicKey(BONK_TOKEN_MINT),
-      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // TODO @ tendies maintenance address here
+      new PublicKey("GCTFubGrFEUrHypG3Xreofeo9UMzgEMNnL7gdE3xNc6D") // godzid fees
     ),
-    0.1 // 0.1%
+    0.07666666666666666 // 0.07666666666666666%
   ],
   [
     getAssociatedTokenAddressSync(
       new PublicKey(BONK_TOKEN_MINT),
-      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // TODO @ tendies BONK address here
+      new PublicKey("5sjjuNuf1f2kEL4UtyT6fxiqzk6ddi9yojXNUoLxNQ1Q") // infra maintenance fees
     ),
-    0.1 // 0.1%
+    0.22999999999999998 // 0.22999999999999998%
+  ],
+  [
+    getAssociatedTokenAddressSync(
+      new PublicKey(BONK_TOKEN_MINT),
+      new PublicKey("2Vi8WzFHAAVNjtAquByvdzzpw8p4MuXhkQyBxs4qSVxw") // bonk fees
+    ),
+    0.22999999999999998 // 0.22999999999999998%
   ]
 ];
 
