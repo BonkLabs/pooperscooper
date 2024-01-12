@@ -72,14 +72,14 @@ const distributionTargets: [PublicKey, number][] = [
   [
     getAssociatedTokenAddressSync(
       new PublicKey(BONK_TOKEN_MINT),
-      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // TODO @ tendies maintenance address here
+      new PublicKey("5sjjuNuf1f2kEL4UtyT6fxiqzk6ddi9yojXNUoLxNQ1Q") // Infra costs
     ),
     0.1 // 0.1%
   ],
   [
     getAssociatedTokenAddressSync(
       new PublicKey(BONK_TOKEN_MINT),
-      new PublicKey("75b1ceXRX5k8115DshtaGJbg8jyU7PxM49tBa4sKnKJR") // TODO @ tendies BONK address here
+      new PublicKey("2Vi8WzFHAAVNjtAquByvdzzpw8p4MuXhkQyBxs4qSVxw") // Bonk
     ),
     0.1 // 0.1%
   ]
