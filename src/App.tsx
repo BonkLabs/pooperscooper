@@ -12,6 +12,7 @@ import {
 import {
   UnsafeBurnerWalletAdapter,
   PhantomWalletAdapter,
+  LedgerWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import { clusterApiUrl } from "@solana/web3.js";
 import React, { FC, ReactNode, useMemo } from "react";
@@ -40,7 +41,10 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
   const endpoint = React.useMemo(() => network, [network]);
 
   const wallets = useMemo(
-    () => [new PhantomWalletAdapter()],
+    () => [
+      new PhantomWalletAdapter(),
+      new LedgerWalletAdapter()
+    ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [network]
   );
