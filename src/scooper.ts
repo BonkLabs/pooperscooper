@@ -58,7 +58,7 @@ interface TokenBalance {
 
 const BONK_TOKEN_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
 
-const liquidStableTokens = ["mSOL", "JitoSOL", "bSOL", "mrgnLST", "jSOL", "stSOL", "scnSOL"];
+const liquidStableTokens = ["mSOL", "JitoSOL", "bSOL", "mrgnLST", "jSOL", "stSOL", "scnSOL", "LST"];
 const forbiddenTokens = ["Bonk", "USDC", "USDT"].concat(liquidStableTokens);
 
 const distributionTargets: [PublicKey, number][] = [
