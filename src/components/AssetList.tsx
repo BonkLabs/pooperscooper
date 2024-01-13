@@ -18,6 +18,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { burn } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { track } from '@vercel/analytics';
 
 enum ApplicationStates {
   LOADING = 0,
@@ -201,6 +202,7 @@ const AssetList: React.FC = () => {
       )
         .then(() => {
           setState(ApplicationStates.SCOOPED);
+          track('Scooped');
         })
         .catch((err) => {
           const notify = () => toast.error("User rejected transaction!");
