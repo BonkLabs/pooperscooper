@@ -67,14 +67,7 @@ const distributionTargets: [PublicKey, number][] = [
       new PublicKey(BONK_TOKEN_MINT),
       new PublicKey("CbX9HYvyHBa2RuotGN8Y8hCKow6xppdrhAh6RL6i2BEf") // mike7c2 fees
     ),
-    0.15333333333333332 // 0.15333333333333332%
-  ],
-  [
-    getAssociatedTokenAddressSync(
-      new PublicKey(BONK_TOKEN_MINT),
-      new PublicKey("GCTFubGrFEUrHypG3Xreofeo9UMzgEMNnL7gdE3xNc6D") // godzid fees
-    ),
-    0.07666666666666666 // 0.07666666666666666%
+    0.22999999999999998 // 0.22999999999999998%
   ],
   [
     getAssociatedTokenAddressSync(
