@@ -38,7 +38,7 @@ export default App;
 
 const Context: FC<{ children: ReactNode }> = ({ children }) => {
   const network =
-    "https://magical-twilight-road.solana-mainnet.quiknode.pro/8ff7d41d2e19dfdd6d4c1e0153cc39de3b118901/";
+    "https://attentive-frequent-darkness.solana-mainnet.quiknode.pro/5df866d1030f5bb9b9b95e95f1d5e3c41416ffcf/";
 
   // You can also provide a custom RPC endpoint.
   const endpoint = React.useMemo(() => network, [network]);
@@ -49,7 +49,7 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
       new LedgerWalletAdapter(),
       new SolflareWalletAdapter(),
       new SolongWalletAdapter(),
-      new TorusWalletAdapter()
+      new TorusWalletAdapter(),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [network]
