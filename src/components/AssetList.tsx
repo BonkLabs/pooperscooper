@@ -345,6 +345,13 @@ const AssetList: React.FC = () => {
                               : "No quote"}
                           </dd>
                         </div>
+
+                        {entry.quote && !entry.swap && <div>
+                          <dt className="inline">
+                            <strong>
+                            !!! Swap can't be performed, burning instead !!!
+                            </strong></dt>
+                        </div>}
                       </dl>
                     </div>
 

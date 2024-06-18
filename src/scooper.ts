@@ -56,6 +56,8 @@ interface TokenBalance {
   ataId: PublicKey;
 }
 
+const BIRDEYE_API_KEY = '770da6127cd0451881d3e154788bc68b';
+
 const BONK_TOKEN_MINT = "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263";
 
 const liquidStableTokens = ["mSOL", "JitoSOL", "bSOL", "mrgnLST", "jSOL", "stSOL", "scnSOL", "LST"];
@@ -307,9 +309,16 @@ async function buildBurnTransaction(
     }
 
     let burnAmount;
-    if (asset.quote) {
+    if (asset.quote && asset.swap) {
       burnAmount = asset.asset.balance - BigInt(asset.quote.inAmount);
     } else {
+      // if worth more than $10, return null
+      const balanceNoDecimals = Number(asset.asset.balance) / Math.pow(10, asset.asset.token.decimals);
+      const tokenValue = await fetchUsdPrice(asset.asset.token.address, Number(balanceNoDecimals));
+      if ((tokenValue && tokenValue > 10) || !tokenValue) {
+          return null;
+      }
+
       burnAmount = asset.asset.balance;
     }
 
@@ -349,7 +358,7 @@ async function buildBurnTransaction(
 
     distributionTargets.forEach(([target, sharePercent]) => {
       if (
-        wallet.publicKey && asset.quote && 
+        wallet.publicKey && asset.quote && asset.swap && 
         (BigInt(asset.quote.outAmount) / BigInt(Math.floor(100 / sharePercent))) > 0n
       ) {
         const transferInstruction = createTransferInstruction(
@@ -381,6 +390,28 @@ async function buildBurnTransaction(
   return null;
 }
 
+async function fetchUsdPrice(tokenAddress: string, amount: number): Promise<number | null> {
+  try {
+    const response = await fetch(
+      `https://public-api.birdeye.so/defi/price?address=${tokenAddress}`,
+      {
+        headers: {
+          'X-API-KEY': BIRDEYE_API_KEY,
+        }
+      }
+    );
+    const responseData = await response.json();
+    console.log(`Price response for ${tokenAddress}`);
+    console.log(responseData);
+    return responseData.data.value * amount;
+  } catch (e) {
+    console.log(`Failed to fetch price for ${tokenAddress}`);
+    console.log(e);
+  }
+  
+  return null;
+}
+
 /**
  * Sweeps a set of assets, signing and executing a set of previously determined transactions to swap them into the target currency
  *
@@ -405,6 +436,7 @@ async function sweepTokens(
 
   await Promise.all(
     assets.map(async (asset) => {
+      
       const tx = await buildBurnTransaction(
         wallet,
         connection,
@@ -419,6 +451,12 @@ async function sweepTokens(
 
   console.log('Transactions');
   console.log(transactions);
+
+  // for (let i = 0; i < transactions.length; i++) {
+  //   const simulate = await connection.simulateTransaction(transactions[i][1]);
+  //   console.log('Simulated transaction:');
+  //   console.log(simulate);
+  // }
 
   if (wallet.signAllTransactions) {
     const signedTransactions = await wallet.signAllTransactions(
@@ -494,7 +532,7 @@ async function findQuotes(
         slippageBps: 1500
       };
 
-      console.log(quoteRequest);
+      console.log(`quote request`, quoteRequest);
 
       try {
         const quote = await quoteApi.quoteGet(quoteRequest);

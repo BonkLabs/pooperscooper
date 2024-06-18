@@ -44,6 +44,10 @@ const Info = () => {
             (Typically 0.0024 Solana per account closed).
             A {getTotalFee().toLocaleString()}% fee is currently taken from all swaps, no fee is taken from account closures.
           </p>
+
+          <p className="mt-4 text-gray-800 font-bold tracking-wide">
+            * If the swap can't be performed the token account and amount will be burned instead, caution mf !!!
+          </p>
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 md:mt-16 md:grid-cols-2 md:gap-12">
