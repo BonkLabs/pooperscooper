@@ -519,8 +519,16 @@ async function findQuotes(
 ): Promise<void> {
   const assets = await getTokenAccounts(walletAddress, connection, tokens);
 
-  await Promise.all(
-    assets.map(async (asset) => {
+  // await Promise.all(
+  for (let i = 0; i < assets.length; i++) {
+    await delay(100);
+
+    const asset = assets[i];
+    if (asset.balance == 0n) {
+      continue;
+    }
+
+    // assets.map(async (asset) => {
       console.log('Found asset');
       console.log(asset);
       foundAssetCallback(asset.token.address, asset);
@@ -558,8 +566,12 @@ async function findQuotes(
         console.log(quoteErr);
         errorCallback(asset.token.address, "Couldn't get quote");
       }
-    })
-  );
+    }
+  // );
+}
+
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
@@ -570,7 +582,12 @@ async function findQuotes(
 async function loadJupyterApi(): Promise<
   [DefaultApi, { [id: string]: TokenInfo }]
 > {
-  let quoteApi = createJupiterApiClient();
+  const ENDPOINT = "https://jupiter-swap-api.quiknode.pro/D699F14B87B6";
+  const CONFIG = {
+    basePath: ENDPOINT,
+  };
+
+  let quoteApi = createJupiterApiClient(CONFIG);
   const allTokens = await fetch('https://token.jup.ag/all');
   const allList = await allTokens.json();
   const tokenMap: { [id: string]: TokenInfo } = {};
