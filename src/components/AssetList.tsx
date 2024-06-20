@@ -33,6 +33,7 @@ class AssetState {
   quote?: QuoteResponse;
   swap?: SwapInstructionsResponse;
   checked?: boolean;
+  usdPrice?: number;
   transactionState?: string;
   transactionId?: string;
 
@@ -94,10 +95,11 @@ const AssetList: React.FC = () => {
         key,
         {
           ...asset,
-          checked: !selectAll && filteredData.some((entry) => entry[0] === key), // updated: only selects "all" from currently filtered data
+          checked: !selectAll && filteredData.some((entry) => entry[0] === key) && !cannotScoop(asset), // updated: only selects "all" from currently filtered data
         },
       ])
     );
+
     setAssetList(updatedAssetListObject);
   };
 
@@ -174,6 +176,12 @@ const AssetList: React.FC = () => {
             return aL;
           });
         },
+        (id, usdPrice) => {
+          updateAssetList((aL) => {
+            aL[id].usdPrice = usdPrice;
+            return aL;
+          });
+        },
         (id, error) => {}
       ).then(() => {
         setState(ApplicationStates.LOADED_QUOTES);
@@ -246,6 +254,10 @@ const AssetList: React.FC = () => {
 
     return nameSearch && filterZeroBalance && filterStrict;
   });
+
+  const cannotScoop = (entry: any) => {
+    return entry.asset.balance > 0 && !entry.swap && entry.usdPrice > 1;
+  }
 
   const sortedAssets = [...filteredData].sort((a, b) => {
     let comparison = 0;
@@ -646,7 +658,7 @@ const AssetList: React.FC = () => {
                             });
                           }}
                           type="checkbox"
-                          disabled={state !== ApplicationStates.LOADED_QUOTES}
+                          disabled={state !== ApplicationStates.LOADED_QUOTES || cannotScoop(entry)}
                         />
                       )}
                     </td>
@@ -681,7 +693,14 @@ const AssetList: React.FC = () => {
                             <path d="M13 9H15V17H13V9Z" fill="currentColor" />
                           </svg>
                         )}
-                        <p>{entry.asset.token.symbol}</p>
+                        <p>{entry.asset.token.symbol}
+                        <br/>
+                        {cannotScoop(entry) && 
+                        <>
+                        <small><em>Can't scoop right now.<br/>Please try again later.</em></small>
+                        </>
+                        }
+                        </p>
                       </a>
                     </td>
                     <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
