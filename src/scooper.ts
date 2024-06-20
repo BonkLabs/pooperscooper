@@ -47,6 +47,7 @@ interface Asset {
   quote?: QuoteResponse;
   swap?: SwapInstructionsResponse;
   checked?: boolean;
+  usdPrice?: number;
 }
 
 interface TokenBalance {
@@ -315,7 +316,7 @@ async function buildBurnTransaction(
       // if worth more than $10, return null
       const balanceNoDecimals = Number(asset.asset.balance) / Math.pow(10, asset.asset.token.decimals);
       const tokenValue = await fetchUsdPrice(asset.asset.token.address, Number(balanceNoDecimals));
-      if ((tokenValue && tokenValue > 10) || !tokenValue) {
+      if ((tokenValue && tokenValue > 1) || !tokenValue) {
           return null;
       }
 
@@ -436,7 +437,6 @@ async function sweepTokens(
 
   await Promise.all(
     assets.map(async (asset) => {
-      
       const tx = await buildBurnTransaction(
         wallet,
         connection,
@@ -515,6 +515,7 @@ async function findQuotes(
   foundAssetCallback: (id: string, asset: TokenBalance) => void,
   foundQuoteCallback: (id: string, quote: QuoteResponse) => void,
   foundSwapCallback: (id: string, swap: SwapInstructionsResponse) => void,
+  foundUsdCallback: (id: string, amount: number) => void,
   errorCallback: (id: string, err: string) => void
 ): Promise<void> {
   const assets = await getTokenAccounts(walletAddress, connection, tokens);
@@ -566,7 +567,19 @@ async function findQuotes(
         console.log(quoteErr);
         errorCallback(asset.token.address, "Couldn't get quote");
       }
+
+       // fetchUsd price
+      try {
+        const balanceNoDecimals = Number(asset.balance) / Math.pow(10, asset.token.decimals);      
+        const usdPrice = await fetchUsdPrice(asset.token.address, Number(balanceNoDecimals)) || 0;
+        foundUsdCallback(asset.token.address, usdPrice);
+      } catch (usdErr) {
+        console.log(`Failed to get usd price for ${asset.token.symbol}`);
+        console.log(usdErr);
+        errorCallback(asset.token.address, "Couldn't get usd price");
+      }
     }
+   
   // );
 }
 
@@ -582,8 +595,8 @@ function delay(ms: number) {
 async function loadJupyterApi(): Promise<
   [DefaultApi, { [id: string]: TokenInfo }]
 > {
-  // const ENDPOINT = "https://jupiter-swap-api.quiknode.pro/D699F14B87B6";
-  const ENDPOINT = "https://public.jupiterapi.com";
+  const ENDPOINT = "https://jupiter-swap-api.quiknode.pro/D699F14B87B6";
+  // const ENDPOINT = "https://public.jupiterapi.com";
   const CONFIG = {
     basePath: ENDPOINT,
   };
