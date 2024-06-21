@@ -522,8 +522,6 @@ async function findQuotes(
 
   // await Promise.all(
   for (let i = 0; i < assets.length; i++) {
-    // await delay(100);
-
     const asset = assets[i];
     if (asset.balance == 0n) {
       continue;
@@ -596,12 +594,11 @@ async function loadJupyterApi(): Promise<
   [DefaultApi, { [id: string]: TokenInfo }]
 > {
   const ENDPOINT = "https://jupiter-swap-api.quiknode.pro/D699F14B87B6";
-  // const ENDPOINT = "https://public.jupiterapi.com";
   const CONFIG = {
     basePath: ENDPOINT,
   };
 
-  let quoteApi = createJupiterApiClient();
+  let quoteApi = createJupiterApiClient(CONFIG);
   const allTokens = await fetch('https://token.jup.ag/all');
   const allList = await allTokens.json();
   const tokenMap: { [id: string]: TokenInfo } = {};
