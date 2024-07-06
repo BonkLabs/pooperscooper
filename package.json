@@ -36,6 +36,8 @@
         "@solana/wallet-adapter-react-ui": "workspace:^",
         "@solana/wallet-adapter-wallets": "workspace:^",
         "@solana/web3.js": "^1.77.3",
+        "@tiplink/wallet-adapter": "^2.1.18",
+        "@tiplink/wallet-adapter-react-ui": "^1.0.0",
         "@vercel/analytics": "^1.1.1",
         "gulp-inline-source": "^4.0.0",
         "gulp-replace": "^1.1.4",

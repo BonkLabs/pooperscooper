@@ -23,9 +23,21 @@ import { render } from "react-dom";
 import AssetList from "./components/AssetList";
 import Info from "./components/Info";
 import Header from "./components/Header";
+import { registerTipLinkWallet } from "@tiplink/wallet-adapter";
+import { TipLinkWalletAutoConnectV2 } from "@tiplink/wallet-adapter-react-ui";
 
 require("./App.css");
 require("@solana/wallet-adapter-react-ui/styles.css");
+
+const network =
+"https://cold-dark-brook.solana-mainnet.quiknode.pro/f4c5a4e52650650bebc3fa8ea1d7bf2e5f3d4556/";
+
+registerTipLinkWallet({
+	title: "Pooper Scooper",
+	clientId: "205a8337-937e-42ea-96b5-577c77ed7153",
+	theme: "light", // pick between "dark"/"light"/"system",
+	rpcUrl: network,
+});
 
 const App: FC = () => {
   return (
@@ -37,8 +49,7 @@ const App: FC = () => {
 export default App;
 
 const Context: FC<{ children: ReactNode }> = ({ children }) => {
-  const network =
-    "https://cold-dark-brook.solana-mainnet.quiknode.pro/f4c5a4e52650650bebc3fa8ea1d7bf2e5f3d4556/";
+
 
   // You can also provide a custom RPC endpoint.
   const endpoint = React.useMemo(() => network, [network]);
@@ -58,7 +69,12 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
+      <TipLinkWalletAutoConnectV2
+          isReady
+          query={{}}
+        >
         <WalletModalProvider>{children}</WalletModalProvider>
+      </TipLinkWalletAutoConnectV2>
       </WalletProvider>
     </ConnectionProvider>
   );
