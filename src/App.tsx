@@ -30,7 +30,7 @@ require("./App.css");
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 const network =
-"https://rpc.ironforge.network/mainnet?apiKey=01HS93SE15GA6HQYZ03A4PHWC8";
+process.env.REACT_APP_RPC_URL!;
 
 registerTipLinkWallet({
 	title: "Pooper Scooper",
