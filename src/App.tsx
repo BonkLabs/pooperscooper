@@ -30,7 +30,7 @@ require("./App.css");
 require("@solana/wallet-adapter-react-ui/styles.css");
 
 const network =
-"https://cold-dark-brook.solana-mainnet.quiknode.pro/f4c5a4e52650650bebc3fa8ea1d7bf2e5f3d4556/";
+"https://rpc.ironforge.network/mainnet?apiKey=01HS93SE15GA6HQYZ03A4PHWC8";
 
 registerTipLinkWallet({
 	title: "Pooper Scooper",
