@@ -316,6 +316,7 @@ async function buildBurnTransaction(
       // if worth more than $10, return null
       const balanceNoDecimals = Number(asset.asset.balance) / Math.pow(10, asset.asset.token.decimals);
       const tokenValue = await fetchUsdPrice(asset.asset.token.address, Number(balanceNoDecimals));
+      console.log(`Token value for ${asset.asset.token.symbol}: ${tokenValue}`);
       if ((tokenValue && tokenValue > 1) || !tokenValue) {
           return null;
       }
@@ -393,18 +394,11 @@ async function buildBurnTransaction(
 
 async function fetchUsdPrice(tokenAddress: string, amount: number): Promise<number | null> {
   try {
-    const response = await fetch(
-      `https://public-api.birdeye.so/defi/price?address=${tokenAddress}`,
-      {
-        headers: {
-          'X-API-KEY': BIRDEYE_API_KEY,
-        }
-      }
-    );
-    const responseData = await response.json();
-    console.log(`Price response for ${tokenAddress}`);
-    console.log(responseData);
-    return responseData.data.value * amount;
+    const response1 = await fetch(
+      `${process.env.REACT_APP_BONK_API_URL}/api/price?address=${tokenAddress}`,);
+
+    const responseData1 = await response1.json();
+    return responseData1.data.value * amount;
   } catch (e) {
     console.log(`Failed to fetch price for ${tokenAddress}`);
     console.log(e);
@@ -593,6 +587,7 @@ function delay(ms: number) {
 async function loadJupyterApi(): Promise<
   [DefaultApi, { [id: string]: TokenInfo }]
 > {
+  // https://public.jupiterapi.com
   const ENDPOINT = "https://jupiter-swap-api.quiknode.pro/D699F14B87B6";
   const CONFIG = {
     basePath: ENDPOINT,
