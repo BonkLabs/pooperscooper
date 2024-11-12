@@ -141,6 +141,8 @@ const AssetList: React.FC = () => {
     loadJupyterApi().then(([quoteApi, tokenMap]) => {
       setTokens(tokenMap);
       setQuoteApi(quoteApi);
+    }).catch( (err) => {
+      // TODO: Failed to load Jupiter token lists, User should reload page
     });
   }, []);
 
