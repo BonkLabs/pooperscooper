@@ -588,7 +588,7 @@ async function loadJupyterApi(): Promise<
   [DefaultApi, { [id: string]: TokenInfo }]
 > {
   // https://public.jupiterapi.com
-  const ENDPOINT = "https://jupiter-swap-api.quiknode.pro/295A45DF282E/";
+  const ENDPOINT = "https://jupiter-swap-api.quiknode.pro/295A45DF282E";
   const CONFIG = {
     basePath: ENDPOINT,
   };
