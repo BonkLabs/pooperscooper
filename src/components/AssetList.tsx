@@ -545,9 +545,6 @@ const AssetList: React.FC = () => {
                   Balance
                 </th>
                 <th className="whitespace-nowrap font-medium p-4 text-right">
-                  Scoop Value ($BONK)
-                </th>
-                <th className="whitespace-nowrap font-medium p-4 text-right">
                   Scoop Value (Sol)
                 </th>
                 <th className="whitespace-nowrap font-medium p-4 text-right">
@@ -557,30 +554,23 @@ const AssetList: React.FC = () => {
                   Token List
                   <div className="group relative hover:cursor-help max-w-max">
                     <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        d="M11 10.9794C11 10.4271 11.4477 9.97937 12 9.97937C12.5523 9.97937 13 10.4271 13 10.9794V16.9794C13 17.5317 12.5523 17.9794 12 17.9794C11.4477 17.9794 11 17.5317 11 16.9794V10.9794Z"
-                        fill="currentColor"
-                      />
-                      <path
-                        d="M12 6.05115C11.4477 6.05115 11 6.49886 11 7.05115C11 7.60343 11.4477 8.05115 12 8.05115C12.5523 8.05115 13 7.60343 13 7.05115C13 6.49886 12.5523 6.05115 12 6.05115Z"
-                        fill="currentColor"
-                      />
-                      <path
                         fill-rule="evenodd"
                         clip-rule="evenodd"
-                        d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM4 12C4 16.4183 7.58172 20 12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12Z"
-                        fill="currentColor"
+                        d="M20 10C20 15.5228 15.5228 20 10 20C4.47715 20 0 15.5228 0 10C0 4.47715 4.47715 0 10 0C15.5228 0 20 4.47715 20 10ZM10 9C10.5523 9 11 9.44771 11 10V14.5C11 15.0523 10.5523 15.5 10 15.5C9.44771 15.5 9 15.0523 9 14.5V10C9 9.44771 9.44771 9 10 9ZM10 8C10.5523 8 11 7.55228 11 7C11 6.44772 10.5523 6 10 6C9.44771 6 9 6.44772 9 7C9 7.55228 9.44771 8 10 8Z"
+                        fill="#FF8D17"
                       />
                     </svg>
-                    <div className="hidden bg-black text-white text-center text-xs rounded-lg py-2 absolute z-10 group-hover:block top-6 px-3 -right-6 w-64 md:w-96 hover:cursor-auto text-wrap">
+
+                    <div className="hidden bg-[#FF8D17] text-white text-center text-xs rounded-lg py-2 absolute z-10 group-hover:block top-6 px-3 -right-6 hover:cursor-auto w-32 text-wrap">
                       <a
-                        className="flex gap-4 items-right hover:font-bold"
+                        className="flex gap-4 items-right hover:font-bold mx-auto max-w-max"
                         href={`https://station.jup.ag/docs/token-list/token-list-api#strict-and-all-lists`}
                         target="_blank"
                       >
@@ -726,14 +716,6 @@ const AssetList: React.FC = () => {
                       ).toLocaleString()}
                     </td>
                     <td className="whitespace-nowrap p-4 text-right font-mono">
-                      {entry.quote?.outAmount
-                        ? (
-                            Number(burnReturn.bonkAmount) /
-                            10 ** 5
-                          ).toLocaleString()
-                        : "No quote"}
-                    </td>
-                    <td className="whitespace-nowrap p-4 text-right font-mono">
                       {(
                         Number(burnReturn.lamportsAmount) / LAMPORTS_PER_SOL
                       ).toLocaleString()}
@@ -759,27 +741,37 @@ const AssetList: React.FC = () => {
           </table>
         </div>
         <div className="lg:sticky order-first lg:order-last top-12 mb-auto grid gap-4">
-          <div className="flex flex-col gap-8 bg-white/45 rounded-3xl p-10 py-12 border-[1.5px] border-white">
+          <div className="flex flex-col gap-8 bg-white/45 rounded-3xl p-5 sm:p-10 py-12 border-[1.5px] border-white">
             <p className="font-semibold text-4xl text-center uppercase">
               Scoop
             </p>
             <article className="flex items-center gap-4 rounded-lg border-[1.5px] border-white bg-[#FC910366]/40 py-4 px-4 sm:justify-between">
-              <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
+              <span className="rounded-full bg-bonk-white p-2 text-[#FF8D17] sm:order-last">
                 <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 21 21"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     fill-rule="evenodd"
                     clip-rule="evenodd"
-                    d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
+                    d="M4.67792 7.05338C4.53338 5.86202 5.46327 4.8125 6.66337 4.8125H14.3362C15.5363 4.8125 16.4662 5.86203 16.3217 7.05338L15.1312 16.8659C15.0094 17.8699 14.1572 18.625 13.1458 18.625H7.85385C6.84244 18.625 5.99023 17.8699 5.86841 16.8659L4.67792 7.05338ZM7.84181 7.87809C8.39217 7.83205 8.87565 8.24088 8.92169 8.79124L9.46552 15.2917C9.51156 15.842 9.10273 16.3255 8.55236 16.3716C8.002 16.4176 7.51852 16.0088 7.47248 15.4584L6.92866 8.95798C6.88261 8.40762 7.29144 7.92414 7.84181 7.87809ZM12.0787 8.79129C12.1248 8.24093 12.6082 7.83207 13.1586 7.87809C13.709 7.92411 14.1178 8.40758 14.0718 8.95794L13.5283 15.4583C13.4822 16.0087 12.9988 16.4175 12.4484 16.3715C11.898 16.3255 11.4892 15.842 11.5352 15.2917L12.0787 8.79129Z"
                     fill="currentColor"
                   />
-                  <path d="M9 9H11V17H9V9Z" fill="currentColor" />
-                  <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+                  <path
+                    d="M3.59375 5.625L17.4062 5.625"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M7.65625 4.8125V4.8125C7.65625 3.91504 8.38379 3.1875 9.28125 3.1875H11.7188C12.6162 3.1875 13.3438 3.91504 13.3438 4.8125V4.8125"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </span>
 
@@ -792,24 +784,24 @@ const AssetList: React.FC = () => {
               </div>
             </article>
             <article className="flex items-center gap-4 rounded-lg border-[1.5px] border-white bg-[#FC910366]/40 py-4 px-4 sm:justify-between">
-              <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
+              <span className="rounded-full bg-bonk-white p-2 text-[#FF8D17] sm:order-last">
                 <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 21 21"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     fill-rule="evenodd"
                     clip-rule="evenodd"
-                    d="M22.775 8C22.9242 8.65461 23 9.32542 23 10H14V1C14.6746 1 15.3454 1.07584 16 1.22504C16.4923 1.33724 16.9754 1.49094 17.4442 1.68508C18.5361 2.13738 19.5282 2.80031 20.364 3.63604C21.1997 4.47177 21.8626 5.46392 22.3149 6.55585C22.5091 7.02455 22.6628 7.5077 22.775 8ZM20.7082 8C20.6397 7.77018 20.5593 7.54361 20.4672 7.32122C20.1154 6.47194 19.5998 5.70026 18.9497 5.05025C18.2997 4.40024 17.5281 3.88463 16.6788 3.53284C16.4564 3.44073 16.2298 3.36031 16 3.2918V8H20.7082Z"
+                    d="M2.24805 11.7695C2.24805 9.91768 2.98369 8.14167 4.29315 6.83221C5.60261 5.52276 7.37862 4.78711 9.23047 4.78711C9.39882 4.78711 9.56027 4.85399 9.67932 4.97303C9.79836 5.09207 9.86523 5.25352 9.86523 5.42188V11.1348H15.5781C15.7465 11.1348 15.9079 11.2016 16.027 11.3207C16.146 11.4397 16.2129 11.6012 16.2129 11.7695C16.2129 13.6214 15.4772 15.3974 14.1678 16.7068C12.8583 18.0163 11.0823 18.752 9.23047 18.752C7.37862 18.752 5.60261 18.0163 4.29315 16.7068C2.98369 15.3974 2.24805 13.6214 2.24805 11.7695Z"
                     fill="currentColor"
                   />
                   <path
                     fill-rule="evenodd"
                     clip-rule="evenodd"
-                    d="M1 14C1 9.02944 5.02944 5 10 5C10.6746 5 11.3454 5.07584 12 5.22504V12H18.775C18.9242 12.6546 19 13.3254 19 14C19 18.9706 14.9706 23 10 23C5.02944 23 1 18.9706 1 14ZM16.8035 14H10V7.19648C6.24252 7.19648 3.19648 10.2425 3.19648 14C3.19648 17.7575 6.24252 20.8035 10 20.8035C13.7575 20.8035 16.8035 17.7575 16.8035 14Z"
+                    d="M11.1348 2.88281C11.1348 2.71446 11.2016 2.55301 11.3207 2.43397C11.4397 2.31492 11.6012 2.24805 11.7695 2.24805C13.6214 2.24805 15.3974 2.98369 16.7068 4.29315C18.0163 5.60261 18.752 7.37862 18.752 9.23047C18.752 9.39882 18.6851 9.56027 18.566 9.67932C18.447 9.79836 18.2855 9.86523 18.1172 9.86523H11.7695C11.6012 9.86523 11.4397 9.79836 11.3207 9.67932C11.2016 9.56027 11.1348 9.39882 11.1348 9.23047V2.88281Z"
                     fill="currentColor"
                   />
                 </svg>
