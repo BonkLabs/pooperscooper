@@ -29,10 +29,10 @@ const Info = () => {
   ];
 
   return (
-    <section className="relative py-6 mb-4">
+    <section className="relative sm:py-6 mb-4">
       <div>
-        <div className="flex gap-16">
-          <p className="text-white font-medium tracking-wide text-3xl">
+        <div className="flex md:flex-row flex-col gap-8 sm:gap-16">
+          <p className="text-white font-medium tracking-wide text-lg sm:text-3xl">
             Airdrops and adverts clutter your wallet. This tool allows you to
             quickly "Scoop" all your unwanted assets into $BONK via
             <a href="https://jup.ag/">
@@ -42,7 +42,7 @@ const Info = () => {
           </p>
 
           <div className="text-[#1F2937] tracking-wide space-y-4">
-            <p className="text-lg">
+            <p className="text-sm sm:text-lg">
               Token accounts for scooped assets are closed, returning the rent
               to you as Solana. (Typically 0.0024 Solana per account closed). A{" "}
               {getTotalFee().toLocaleString()}% fee is currently taken from all
@@ -55,7 +55,7 @@ const Info = () => {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-4 md:mt-16 md:grid-cols-4 md:gap-12 bg-white/45 p-8 rounded-[34px] border-[1.5px] border-white">
+        <div className="mt-8 grid sm:grid-cols-2 gap-4 md:mt-16 md:grid-cols-4 md:gap-12 bg-white/45 p-4 sm:p-8 rounded-[34px] border-[1.5px] border-white">
           {steps.map((step, index) => {
             const { title, description } = step;
             return (
@@ -65,7 +65,7 @@ const Info = () => {
                 </span> */}
                 {/* <img src={image} alt="" width={50} /> */}
 
-                <div className="bg-[#FFEC36] rounded-full text-3xl font-semibold min-h-12 min-w-12 flex justify-center items-center">
+                <div className="bg-[#FFEC36] rounded-full text-xl sm:text-3xl font-semibold min-h-8 sm:min-h-12 min-w-8 sm:min-w-12 flex justify-center items-center">
                   {index + 1}
                 </div>
 
