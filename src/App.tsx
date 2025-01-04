@@ -29,14 +29,13 @@ import { TipLinkWalletAutoConnectV2 } from "@tiplink/wallet-adapter-react-ui";
 require("./App.css");
 require("@solana/wallet-adapter-react-ui/styles.css");
 
-const network =
-process.env.REACT_APP_RPC_URL!;
+const network = process.env.REACT_APP_RPC_URL!;
 
 registerTipLinkWallet({
-	title: "Pooper Scooper",
-	clientId: "205a8337-937e-42ea-96b5-577c77ed7153",
-	theme: "light", // pick between "dark"/"light"/"system",
-	rpcUrl: network,
+  title: "Pooper Scooper",
+  clientId: "205a8337-937e-42ea-96b5-577c77ed7153",
+  theme: "light", // pick between "dark"/"light"/"system",
+  rpcUrl: network,
 });
 
 const App: FC = () => {
@@ -49,8 +48,6 @@ const App: FC = () => {
 export default App;
 
 const Context: FC<{ children: ReactNode }> = ({ children }) => {
-
-
   // You can also provide a custom RPC endpoint.
   const endpoint = React.useMemo(() => network, [network]);
 
@@ -69,12 +66,9 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
-      <TipLinkWalletAutoConnectV2
-          isReady
-          query={{}}
-        >
-        <WalletModalProvider>{children}</WalletModalProvider>
-      </TipLinkWalletAutoConnectV2>
+        <TipLinkWalletAutoConnectV2 isReady query={{}}>
+          <WalletModalProvider>{children}</WalletModalProvider>
+        </TipLinkWalletAutoConnectV2>
       </WalletProvider>
     </ConnectionProvider>
   );
@@ -85,7 +79,7 @@ const Content: FC = () => {
   const wallet = useWallet();
 
   return (
-    <div className="bg-gradient-to-b from-[#FC8E03] to-[#FFD302] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen relative">
+    <div className="bg-gradient-to-r from-[#FC8E03] to-[#FFD302] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen relative">
       <Header />
       <Info />
       <div className="min-h-[30vh]">
@@ -98,7 +92,7 @@ const Content: FC = () => {
         )}
         <img
           src={`/images/bonk_logo_transparent.png`}
-          width={500}
+          width={200}
           className="absolute bottom-0 left-0"
           alt="$BONK Logo"
         />

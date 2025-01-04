@@ -35,6 +35,7 @@ pre {
 body {
   background: #222222;
   margin: 0;
+  font-family: "Figtree", sans-serif;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

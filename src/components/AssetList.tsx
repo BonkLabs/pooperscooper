@@ -18,7 +18,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { burn } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { track } from '@vercel/analytics';
+import { track } from "@vercel/analytics";
 
 enum ApplicationStates {
   LOADING = 0,
@@ -95,7 +95,10 @@ const AssetList: React.FC = () => {
         key,
         {
           ...asset,
-          checked: !selectAll && filteredData.some((entry) => entry[0] === key) && !cannotScoop(asset), // updated: only selects "all" from currently filtered data
+          checked:
+            !selectAll &&
+            filteredData.some((entry) => entry[0] === key) &&
+            !cannotScoop(asset), // updated: only selects "all" from currently filtered data
         },
       ])
     );
@@ -210,7 +213,7 @@ const AssetList: React.FC = () => {
       )
         .then(() => {
           setState(ApplicationStates.SCOOPED);
-          track('Scooped');
+          track("Scooped");
         })
         .catch((err) => {
           const notify = () => toast.error("User rejected transaction!");
@@ -257,7 +260,7 @@ const AssetList: React.FC = () => {
 
   const cannotScoop = (entry: any) => {
     return entry.asset.balance > 0 && !entry.swap && entry.usdPrice > 1;
-  }
+  };
 
   const sortedAssets = [...filteredData].sort((a, b) => {
     let comparison = 0;
@@ -358,12 +361,15 @@ const AssetList: React.FC = () => {
                           </dd>
                         </div>
 
-                        {entry.quote && !entry.swap && <div>
-                          <dt className="inline">
-                            <strong>
-                            !!! Swap can't be performed, burning instead !!!
-                            </strong></dt>
-                        </div>}
+                        {entry.quote && !entry.swap && (
+                          <div>
+                            <dt className="inline">
+                              <strong>
+                                !!! Swap can't be performed, burning instead !!!
+                              </strong>
+                            </dt>
+                          </div>
+                        )}
                       </dl>
                     </div>
 
@@ -514,38 +520,40 @@ const AssetList: React.FC = () => {
   const ScoopList = () => {
     return (
       <div className="grid lg:grid-cols-[2fr_1fr] gap-4">
-        <div className={`overflow-x-auto rounded-3xl self-start`}>
-          <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
-            <thead className="ltr:text-left rtl:text-right">
+        <div
+          className={`overflow-x-auto rounded-3xl self-start border-[1.5px] border-white`}
+        >
+          <table className="min-w-full divide-y-[1.5px] divide-white bg-white/45 text-sm">
+            <thead className="ltr:text-left rtl:text-right text-[#423627] text-xs">
               <tr>
-                <th className="sticky inset-y-0 start-0 bg-white p-4">
+                <th className="sticky inset-y-0 start-0 p-4">
                   <label className="sr-only">Select All</label>
 
                   <input
                     type="checkbox"
                     id="SelectAll"
                     checked={selectAll}
-                    className="h-4 w-4 rounded border-gray-300"
+                    className="h-4 w-4 rounded border-white"
                     onClick={() => handleSelectAll()}
                     disabled={state !== ApplicationStates.LOADED_QUOTES}
                   />
                 </th>
-                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-left">
+                <th className="whitespace-nowrap font-medium p-4 text-left">
                   Symbol
                 </th>
-                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
+                <th className="whitespace-nowrap font-medium p-4 text-right">
                   Balance
                 </th>
-                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
+                <th className="whitespace-nowrap font-medium p-4 text-right">
                   Scoop Value ($BONK)
                 </th>
-                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
+                <th className="whitespace-nowrap font-medium p-4 text-right">
                   Scoop Value (Sol)
                 </th>
-                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right">
+                <th className="whitespace-nowrap font-medium p-4 text-right">
                   Fee ($BONK)
                 </th>
-                <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg text-right flex gap-4 justify-end">
+                <th className="whitespace-nowrap font-medium p-4 text-right flex items-center gap-4 justify-end">
                   Token List
                   <div className="group relative hover:cursor-help max-w-max">
                     <svg
@@ -572,10 +580,12 @@ const AssetList: React.FC = () => {
                     </svg>
                     <div className="hidden bg-black text-white text-center text-xs rounded-lg py-2 absolute z-10 group-hover:block top-6 px-3 -right-6 w-64 md:w-96 hover:cursor-auto text-wrap">
                       <a
-                          className="flex gap-4 items-right hover:font-bold"
-                          href={`https://station.jup.ag/docs/token-list/token-list-api#strict-and-all-lists`}
-                          target="_blank"
-                      >Jupiter token list</a>
+                        className="flex gap-4 items-right hover:font-bold"
+                        href={`https://station.jup.ag/docs/token-list/token-list-api#strict-and-all-lists`}
+                        target="_blank"
+                      >
+                        Jupiter token list
+                      </a>
                     </div>
                   </div>
                 </th>
@@ -584,13 +594,13 @@ const AssetList: React.FC = () => {
                   </th> */}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 relative">
+            <tbody className="relative">
               {state !== ApplicationStates.LOADED_QUOTES &&
                 state !== ApplicationStates.SCOOPED &&
                 state !== ApplicationStates.SCOOPING && (
                   <tr>
                     <td className="table-cell" colSpan={100}>
-                      <div className="text-center font-black uppercase text-lg lg:text-4xl bg-white/70 flex items-center gap-2 min-h-48 h-full w-full justify-center animate-pulse">
+                      <div className="text-center font-black uppercase text-lg lg:text-4xl flex items-center gap-2 min-h-48 h-full w-full justify-center animate-pulse">
                         Fetching Data...{" "}
                         <svg
                           width="72"
@@ -635,20 +645,16 @@ const AssetList: React.FC = () => {
                 return (
                   <tr
                     key={key}
-                    className={`group !border-l-8 ${
+                    className={`group duration-300 transition-all text-[#423627] font-bold text-sm ${
                       entry.checked
-                        ? "!border-l-8 !border-l-bonk-yellow bg-gray-100"
-                        : "hover:bg-gray-100 hover:!border-l-bonk-yellow !border-l-white"
+                        ? "bg-white/45"
+                        : "hover:bg-white/45 !border-l-transparent"
                     }`}
                   >
-                    <td
-                      className={`p-4 bg-white group-hover:bg-gray-100 text-center ${
-                        entry.checked ? "!bg-gray-100" : ""
-                      }`}
-                    >
+                    <td className={`p-4 text-center`}>
                       {forbiddenTokens.includes(entry.asset.token.symbol) || (
                         <input
-                          className="h-4 w-4 rounded border-gray-300"
+                          className="h-4 w-4 rounded-full border-gray-300"
                           checked={entry.checked}
                           onChange={(change) => {
                             updateAssetList((aL) => {
@@ -658,11 +664,14 @@ const AssetList: React.FC = () => {
                             });
                           }}
                           type="checkbox"
-                          disabled={state !== ApplicationStates.LOADED_QUOTES || cannotScoop(entry)}
+                          disabled={
+                            state !== ApplicationStates.LOADED_QUOTES ||
+                            cannotScoop(entry)
+                          }
                         />
                       )}
                     </td>
-                    <td className="whitespace-nowrap p-4 text-gray-700 text-left">
+                    <td className="whitespace-nowrap p-4 text-left">
                       <a
                         className="flex gap-4 items-center hover:font-bold"
                         href={`https://birdeye.so/token/${entry.asset.token.address}?chain=solana`}
@@ -693,23 +702,30 @@ const AssetList: React.FC = () => {
                             <path d="M13 9H15V17H13V9Z" fill="currentColor" />
                           </svg>
                         )}
-                        <p>{entry.asset.token.symbol}
-                        <br/>
-                        {cannotScoop(entry) && 
-                        <>
-                        <small><em>Can't scoop right now.<br/>Please try again later.</em></small>
-                        </>
-                        }
+                        <p>
+                          {entry.asset.token.symbol}
+                          <br />
+                          {cannotScoop(entry) && (
+                            <>
+                              <small>
+                                <em>
+                                  Can't scoop right now.
+                                  <br />
+                                  Please try again later.
+                                </em>
+                              </small>
+                            </>
+                          )}
                         </p>
                       </a>
                     </td>
-                    <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
+                    <td className="whitespace-nowrap p-4 text-right font-mono">
                       {(
                         Number(entry.asset?.balance) /
                         10 ** entry.asset.token.decimals
                       ).toLocaleString()}
                     </td>
-                    <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
+                    <td className="whitespace-nowrap p-4 text-right font-mono">
                       {entry.quote?.outAmount
                         ? (
                             Number(burnReturn.bonkAmount) /
@@ -717,21 +733,21 @@ const AssetList: React.FC = () => {
                           ).toLocaleString()
                         : "No quote"}
                     </td>
-                    <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
+                    <td className="whitespace-nowrap p-4 text-right font-mono">
                       {(
                         Number(burnReturn.lamportsAmount) / LAMPORTS_PER_SOL
                       ).toLocaleString()}
                     </td>
-                    <td className="whitespace-nowrap p-4 text-gray-700 text-right font-mono">
+                    <td className="whitespace-nowrap p-4 text-right font-mono">
                       {(
                         Number(burnReturn.feeAmount) /
                         10 ** 5
                       ).toLocaleString()}
                     </td>
-                    <td className="whitespace-nowrap p-4 text-gray-700 text-right">
+                    <td className="whitespace-nowrap p-4 text-right">
                       {entry.asset?.token.strict && <p>Strict</p>}
                     </td>
-                    <td className="whitespace-nowrap p-4 text-gray-700 text-right">
+                    <td className="whitespace-nowrap p-4 text-right">
                       {entry.transactionState && (
                         <p>{entry.transactionState}</p>
                       )}
@@ -743,8 +759,11 @@ const AssetList: React.FC = () => {
           </table>
         </div>
         <div className="lg:sticky order-first lg:order-last top-12 mb-auto grid gap-4">
-          <div className="flex flex-col gap-4 bg-white rounded-3xl p-4">
-            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white py-6 px-4 sm:justify-between">
+          <div className="flex flex-col gap-8 bg-white/45 rounded-3xl p-10 py-12 border-[1.5px] border-white">
+            <p className="font-semibold text-4xl text-center uppercase">
+              Scoop
+            </p>
+            <article className="flex items-center gap-4 rounded-lg border-[1.5px] border-white bg-[#FC910366]/40 py-4 px-4 sm:justify-between">
               <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
                 <svg
                   width="24"
@@ -772,7 +791,7 @@ const AssetList: React.FC = () => {
                 <p className="text-sm text-gray-500">Possible Scoop</p>
               </div>
             </article>
-            <article className="flex items-center gap-4 rounded-lg border border-gray-300 bg-white py-6 px-4 sm:justify-between">
+            <article className="flex items-center gap-4 rounded-lg border-[1.5px] border-white bg-[#FC910366]/40 py-4 px-4 sm:justify-between">
               <span className="rounded-full bg-bonk-yellow/20 p-3 text-bonk-yellow sm:order-last">
                 <svg
                   width="24"
@@ -805,7 +824,7 @@ const AssetList: React.FC = () => {
               </div>
             </article>
             <button
-              className={`inline-block rounded bg-bonk-yellow py-3 font-medium text-black transition focus:outline-none focus:ring text-xl ${
+              className={`inline-block rounded-full bg-white py-4 font-medium text-black transition focus:outline-none focus:ring text-xl ${
                 isButtonDisabled
                   ? "hover:cursor-not-allowed opacity-50"
                   : "hover:shadow-xl"
@@ -816,7 +835,7 @@ const AssetList: React.FC = () => {
               Scoop
             </button>
           </div>
-          <div
+          {/* <div
             className={`grid gap-2 bg-white rounded-3xl p-4 ${
               state !== ApplicationStates.LOADED_QUOTES &&
               state !== ApplicationStates.SCOOPED &&
@@ -1056,7 +1075,7 @@ const AssetList: React.FC = () => {
                 Refresh Assets
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     );
