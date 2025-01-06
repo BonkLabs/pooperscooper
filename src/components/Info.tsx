@@ -1,6 +1,9 @@
 import { getTotalFee } from "../scooper";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 const Info = () => {
+  const { connected } = useWallet();
+
   const steps = [
     {
       title: "Wait for assets to load",
@@ -55,33 +58,30 @@ const Info = () => {
           </div>
         </div>
 
-        <div className="mt-8 grid sm:grid-cols-2 gap-4 md:mt-16 md:grid-cols-4 md:gap-12 bg-white/45 p-4 sm:p-8 rounded-[34px] border-[1.5px] border-white">
-          {steps.map((step, index) => {
-            const { title, description } = step;
-            return (
-              <div className="flex items-start gap-4">
-                {/* <span className="shrink-0 rounded-lg bg-[#FC8E03] p-4 text-center">
-                  <p className="h-5 w-5 font-black text-3xl">{index + 1}</p>
-                </span> */}
-                {/* <img src={image} alt="" width={50} /> */}
+        {connected && (
+          <div className="mt-8 grid sm:grid-cols-2 gap-4 md:mt-16 md:grid-cols-4 md:gap-12 bg-white/45 p-4 sm:p-8 rounded-[34px] border-[1.5px] border-white">
+            {steps.map((step, index) => {
+              const { title, description } = step;
+              return (
+                <div className="flex items-start gap-4">
+                  <div className="bg-[#FFEC36] rounded-full text-xl sm:text-3xl font-semibold min-h-8 sm:min-h-12 min-w-8 sm:min-w-12 flex justify-center items-center">
+                    {index + 1}
+                  </div>
 
-                <div className="bg-[#FFEC36] rounded-full text-xl sm:text-3xl font-semibold min-h-8 sm:min-h-12 min-w-8 sm:min-w-12 flex justify-center items-center">
-                  {index + 1}
+                  <div className="space-y-4">
+                    <h2 className="text-xl sm:text-2xl font-bold uppercase">
+                      {title}
+                    </h2>
+
+                    <p className="mt-1 text-sm text-[#31271B] tracking-wide">
+                      {description}
+                    </p>
+                  </div>
                 </div>
-
-                <div className="space-y-4">
-                  <h2 className="text-xl sm:text-2xl font-bold uppercase">
-                    {title}
-                  </h2>
-
-                  <p className="mt-1 text-sm text-[#31271B] tracking-wide">
-                    {description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

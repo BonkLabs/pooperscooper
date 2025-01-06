@@ -41,3 +41,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: auto;
 }
+
+.wallet-adapter-dropdown-list-active {
+  transform: translateY(-10px) !important;
+}
+
+.wallet-adapter-dropdown-list {
+  top: auto !important;
+  bottom: 100% !important;
+}
