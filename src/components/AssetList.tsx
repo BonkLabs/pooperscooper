@@ -19,6 +19,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { burn } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { track } from "@vercel/analytics";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 enum ApplicationStates {
   LOADING = 0,
@@ -526,6 +527,247 @@ const AssetList: React.FC = () => {
           <table className="min-w-full divide-y-[1.5px] divide-white bg-white/45 text-sm">
             <thead className="ltr:text-left rtl:text-right text-[#423627] text-xs">
               <tr>
+                <th colSpan={6}>
+                  <div className="flex gap-4 p-4 items-center">
+                    <div
+                      className={`relative w-1/2 ${
+                        state !== ApplicationStates.LOADED_QUOTES &&
+                        state !== ApplicationStates.SCOOPED &&
+                        state !== ApplicationStates.SCOOPING &&
+                        "pointer-events-none"
+                      }`}
+                    >
+                      <label className="sr-only"> Search </label>
+
+                      <input
+                        type="text"
+                        placeholder="Search Asset"
+                        className="w-full bg-[#FC910366]/40 border-[1.5px] border-white rounded-lg py-2.5 px-4 pe-10 shadow-sm sm:text-sm placeholder:text-[#423627] !font-light"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                      />
+
+                      <span className="absolute inset-y-0 end-0 grid w-10 place-content-center">
+                        <button type="button" className="text-[#423627]">
+                          <span className="sr-only">Search</span>
+
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            className="h-4 w-4"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                            />
+                          </svg>
+                        </button>
+                      </span>
+                    </div>
+                    <div
+                      className={`flex gap-4 w-full ${
+                        state !== ApplicationStates.LOADED_QUOTES &&
+                        state !== ApplicationStates.SCOOPED &&
+                        state !== ApplicationStates.SCOOPING &&
+                        "pointer-events-none"
+                      }`}
+                    >
+                      <Popover>
+                        <PopoverTrigger className="flex justify-between w-1/3 gap-2 items-center bg-[#FC910366]/40 border-[1.5px] border-white rounded-lg py-2 px-4">
+                          <span className="text-sm font-medium"> Filter </span>
+
+                          <span className="transition group-open:-rotate-180 text-white">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              className="h-4 w-4"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                              />
+                            </svg>
+                          </span>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <div>
+                            <ul className="space-y-1">
+                              <li>
+                                <label className="inline-flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    className="h-5 w-5 rounded border-gray-300"
+                                    onClick={() =>
+                                      setShowZeroBalance(!showZeroBalance)
+                                    }
+                                  />
+
+                                  <span className="text-sm font-medium text-[#423627]">
+                                    0 Balance
+                                  </span>
+                                </label>
+                              </li>
+
+                              <li>
+                                <label className="inline-flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    className="h-5 w-5 rounded border-gray-300"
+                                    onClick={() => setShowStrict(!showStrict)}
+                                  />
+
+                                  <span className="text-sm font-medium text-[#423627]">
+                                    Strict
+                                  </span>
+                                </label>
+                              </li>
+                            </ul>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+
+                      <Popover>
+                        <PopoverTrigger className="flex justify-between w-1/3 gap-2 items-center bg-[#FC910366]/40 border-[1.5px] border-white rounded-lg py-2 px-4">
+                          <span className="text-sm font-medium"> Sort </span>
+
+                          <span className="transition group-open:-rotate-180 text-white">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              className="h-4 w-4"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M19.5 8.25l-7.5 7.5-7.5-7.5"
+                              />
+                            </svg>
+                          </span>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <div>
+                            <header className="flex items-center justify-between p-4">
+                              <span className="text-sm text-[#423627] flex items-center gap-2">
+                                Ascending
+                                <label className="relative h-8 w-12 cursor-pointer [-webkit-tap-highlight-color:_transparent]">
+                                  <input
+                                    type="checkbox"
+                                    id="AcceptConditions"
+                                    className="peer sr-only"
+                                    onClick={() => setAscending(!ascending)}
+                                  />
+
+                                  <span className="absolute inset-0 m-auto h-2 rounded-full bg-gray-300"></span>
+
+                                  <span className="absolute inset-y-0 start-0 m-auto h-6 w-6 rounded-full bg-gray-500 transition-all peer-checked:start-6 peer-checked:[&_>_*]:scale-0">
+                                    <span className="absolute inset-0 m-auto h-4 w-4 rounded-full bg-gray-200 transition">
+                                      {" "}
+                                    </span>
+                                  </span>
+                                </label>
+                                Descending
+                              </span>
+                            </header>
+
+                            <ul className="space-y-1 border-t border-gray-200 p-4">
+                              <li>
+                                <label className="inline-flex items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="sort"
+                                    value="symbol"
+                                    onClick={(e) => setSortOption("symbol")}
+                                    className="h-5 w-5 rounded border-gray-300"
+                                  />
+
+                                  <span className="text-sm font-medium text-[#423627]">
+                                    Symbol
+                                  </span>
+                                </label>
+                              </li>
+
+                              <li>
+                                <label className="inline-flex items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="sort"
+                                    value="balance"
+                                    onClick={(e) => setSortOption("balance")}
+                                    className="h-5 w-5 rounded border-gray-300"
+                                  />
+
+                                  <span className="text-sm font-medium text-[#423627]">
+                                    Balance
+                                  </span>
+                                </label>
+                              </li>
+
+                              <li>
+                                <label className="inline-flex items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="sort"
+                                    value="scoopValue"
+                                    onClick={(e) => setSortOption("scoopValue")}
+                                    className="h-5 w-5 rounded border-gray-300"
+                                  />
+
+                                  <span className="text-sm font-medium text-[#423627]">
+                                    Scoop Value
+                                  </span>
+                                </label>
+                              </li>
+                            </ul>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div
+                      className={`flex ${
+                        state !== ApplicationStates.LOADED_QUOTES &&
+                        state !== ApplicationStates.SCOOPED &&
+                        state !== ApplicationStates.SCOOPING &&
+                        "pointer-events-none"
+                      }`}
+                    >
+                      <div
+                        className="text-[#00243D] text-center hover:opacity-65 hover:cursor-pointer max-w-max flex items-center gap-2 text-lg"
+                        onClick={(x) => {
+                          reload();
+                        }}
+                      >
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M13.1459 11.0499L12.9716 9.05752L15.3462 8.84977C14.4471 7.98322 13.2242 7.4503 11.8769 7.4503C9.11547 7.4503 6.87689 9.68888 6.87689 12.4503C6.87689 15.2117 9.11547 17.4503 11.8769 17.4503C13.6977 17.4503 15.2911 16.4771 16.1654 15.0224L18.1682 15.5231C17.0301 17.8487 14.6405 19.4503 11.8769 19.4503C8.0109 19.4503 4.87689 16.3163 4.87689 12.4503C4.87689 8.58431 8.0109 5.4503 11.8769 5.4503C13.8233 5.4503 15.5842 6.24474 16.853 7.52706L16.6078 4.72412L18.6002 4.5498L19.1231 10.527L13.1459 11.0499Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                        Refresh
+                      </div>
+                    </div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <thead className="ltr:text-left rtl:text-right text-[#423627] text-xs">
+              <tr>
                 <th className="sticky inset-y-0 start-0 p-4">
                   <label className="sr-only">Select All</label>
 
@@ -579,9 +821,6 @@ const AssetList: React.FC = () => {
                     </div>
                   </div>
                 </th>
-                {/* <th className="whitespace-nowrap p-4 font-medium text-gray-900 text-lg">
-                    Status
-                  </th> */}
               </tr>
             </thead>
             <tbody className="relative">
@@ -623,8 +862,8 @@ const AssetList: React.FC = () => {
               {state === ApplicationStates.LOADED_QUOTES &&
                 filteredData.length === 0 && (
                   <tr>
-                    <td className="table-cell" colSpan={5}>
-                      <div className="text-center font-black uppercase text-lg lg:text-4xl bg-white/70 flex items-center gap-2 min-h-48 h-full w-full justify-center">
+                    <td className="table-cell" colSpan={6}>
+                      <div className="text-center font-black uppercase text-lg lg:text-4xl flex items-center gap-2 min-h-48 h-full w-full justify-center">
                         No Data
                       </div>
                     </td>
@@ -827,247 +1066,6 @@ const AssetList: React.FC = () => {
               Scoop
             </button>
           </div>
-          {/* <div
-            className={`grid gap-2 bg-white rounded-3xl p-4 ${
-              state !== ApplicationStates.LOADED_QUOTES &&
-              state !== ApplicationStates.SCOOPED &&
-              state !== ApplicationStates.SCOOPING &&
-              "hover:cursor-not-allowed"
-            }`}
-          >
-            <div
-              className={`relative ${
-                state !== ApplicationStates.LOADED_QUOTES &&
-                state !== ApplicationStates.SCOOPED &&
-                state !== ApplicationStates.SCOOPING &&
-                "pointer-events-none"
-              }`}
-            >
-              <label className="sr-only"> Search </label>
-
-              <input
-                type="text"
-                placeholder="Search Asset"
-                className="w-full rounded border border-gray-300 py-2.5 px-4 pe-10 shadow-sm sm:text-sm"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-
-              <span className="absolute inset-y-0 end-0 grid w-10 place-content-center">
-                <button
-                  type="button"
-                  className="text-gray-600 hover:text-gray-700"
-                >
-                  <span className="sr-only">Search</span>
-
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    className="h-4 w-4"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                    />
-                  </svg>
-                </button>
-              </span>
-            </div>
-            <div
-              className={`space-y-2 ${
-                state !== ApplicationStates.LOADED_QUOTES &&
-                state !== ApplicationStates.SCOOPED &&
-                state !== ApplicationStates.SCOOPING &&
-                "pointer-events-none"
-              }`}
-            >
-              <details className="overflow-hidden rounded border border-gray-300 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer items-center justify-between gap-2 bg-white p-4 text-gray-900 transition">
-                  <span className="text-sm font-medium"> Filter </span>
-
-                  <span className="transition group-open:-rotate-180">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      className="h-4 w-4"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
-                  </span>
-                </summary>
-
-                <div className="border-t border-gray-200 bg-white">
-                  <ul className="space-y-1 border-t border-gray-200 p-4">
-                    <li>
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="h-5 w-5 rounded border-gray-300"
-                          onClick={() => setShowZeroBalance(!showZeroBalance)}
-                        />
-
-                        <span className="text-sm font-medium text-gray-700">
-                          0 Balance
-                        </span>
-                      </label>
-                    </li>
-
-                    <li>
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="h-5 w-5 rounded border-gray-300"
-                          onClick={() => setShowStrict(!showStrict)}
-                        />
-
-                        <span className="text-sm font-medium text-gray-700">
-                          Strict
-                        </span>
-                      </label>
-                    </li>
-                  </ul>
-                </div>
-              </details>
-
-              <details className="overflow-hidden rounded border border-gray-300 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer items-center justify-between gap-2 bg-white p-4 text-gray-900 transition">
-                  <span className="text-sm font-medium"> Sort </span>
-
-                  <span className="transition group-open:-rotate-180">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      className="h-4 w-4"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                      />
-                    </svg>
-                  </span>
-                </summary>
-
-                <div className="border-t border-gray-200 bg-white">
-                  <header className="flex items-center justify-between p-4">
-                    <span className="text-sm text-gray-700 flex items-center gap-2">
-                      Ascending
-                      <label className="relative h-8 w-12 cursor-pointer [-webkit-tap-highlight-color:_transparent]">
-                        <input
-                          type="checkbox"
-                          id="AcceptConditions"
-                          className="peer sr-only"
-                          onClick={() => setAscending(!ascending)}
-                        />
-
-                        <span className="absolute inset-0 m-auto h-2 rounded-full bg-gray-300"></span>
-
-                        <span className="absolute inset-y-0 start-0 m-auto h-6 w-6 rounded-full bg-gray-500 transition-all peer-checked:start-6 peer-checked:[&_>_*]:scale-0">
-                          <span className="absolute inset-0 m-auto h-4 w-4 rounded-full bg-gray-200 transition">
-                            {" "}
-                          </span>
-                        </span>
-                      </label>
-                      Descending
-                    </span>
-                  </header>
-
-                  <ul className="space-y-1 border-t border-gray-200 p-4">
-                    <li>
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="sort"
-                          value="symbol"
-                          onClick={(e) => setSortOption("symbol")}
-                          className="h-5 w-5 rounded border-gray-300"
-                        />
-
-                        <span className="text-sm font-medium text-gray-700">
-                          Symbol
-                        </span>
-                      </label>
-                    </li>
-
-                    <li>
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="sort"
-                          value="balance"
-                          onClick={(e) => setSortOption("balance")}
-                          className="h-5 w-5 rounded border-gray-300"
-                        />
-
-                        <span className="text-sm font-medium text-gray-700">
-                          Balance
-                        </span>
-                      </label>
-                    </li>
-
-                    <li>
-                      <label className="inline-flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="sort"
-                          value="scoopValue"
-                          onClick={(e) => setSortOption("scoopValue")}
-                          className="h-5 w-5 rounded border-gray-300"
-                        />
-
-                        <span className="text-sm font-medium text-gray-700">
-                          Scoop Value
-                        </span>
-                      </label>
-                    </li>
-                  </ul>
-                </div>
-              </details>
-            </div>
-            <div
-              className={`flex justify-end w-full ${
-                state !== ApplicationStates.LOADED_QUOTES &&
-                state !== ApplicationStates.SCOOPED &&
-                state !== ApplicationStates.SCOOPING &&
-                "pointer-events-none"
-              }`}
-            >
-              <div
-                className="bg-[#FF5C01] text-white text-center py-2 rounded hover:opacity-65 hover:cursor-pointer max-w-max px-8 flex items-center gap-2"
-                onClick={(x) => {
-                  reload();
-                }}
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M13.1459 11.0499L12.9716 9.05752L15.3462 8.84977C14.4471 7.98322 13.2242 7.4503 11.8769 7.4503C9.11547 7.4503 6.87689 9.68888 6.87689 12.4503C6.87689 15.2117 9.11547 17.4503 11.8769 17.4503C13.6977 17.4503 15.2911 16.4771 16.1654 15.0224L18.1682 15.5231C17.0301 17.8487 14.6405 19.4503 11.8769 19.4503C8.0109 19.4503 4.87689 16.3163 4.87689 12.4503C4.87689 8.58431 8.0109 5.4503 11.8769 5.4503C13.8233 5.4503 15.5842 6.24474 16.853 7.52706L16.6078 4.72412L18.6002 4.5498L19.1231 10.527L13.1459 11.0499Z"
-                    fill="currentColor"
-                  />
-                </svg>
-                Refresh Assets
-              </div>
-            </div>
-          </div> */}
         </div>
       </div>
     );
