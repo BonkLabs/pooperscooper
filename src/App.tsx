@@ -6,6 +6,7 @@ import {
   WalletProvider,
 } from "@solana/wallet-adapter-react";
 import {
+  useWalletModal,
   WalletModalProvider,
   WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
@@ -25,6 +26,7 @@ import Info from "./components/Info";
 import Header from "./components/Header";
 import { registerTipLinkWallet } from "@tiplink/wallet-adapter";
 import { TipLinkWalletAutoConnectV2 } from "@tiplink/wallet-adapter-react-ui";
+import WalletButton from "./components/WalletButton";
 
 require("./App.css");
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -77,6 +79,7 @@ const Context: FC<{ children: ReactNode }> = ({ children }) => {
 const Content: FC = () => {
   const { connection } = useConnection();
   const wallet = useWallet();
+  const { setVisible } = useWalletModal();
 
   return (
     <div className="bg-gradient-to-r from-[#FC8E03] to-[#FFD302] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen relative">
@@ -86,8 +89,16 @@ const Content: FC = () => {
         {wallet && connection && wallet.publicKey ? (
           <AssetList />
         ) : (
-          <div className="text-white text-center pt-4 font-bold text-2xl italic h-[30vh] flex items-center justify-center relative z-40">
-            Connect your wallet to scoop up unwanted assets
+          <div className="text-[#00243D] text-center pt-4 h-[50vh] flex flex-col gap-8 items-center justify-center relative z-40 bg-white/45 rounded-[34px] border-[1.5px] border-white">
+            <p className="font-medium text-3xl ">
+              Connect your wallet to scoop up unwanted assets
+            </p>
+            <button
+              className="bg-bonk-white text-[#00243D] p-12 py-3 rounded-full flex gap-2 items-center z-30"
+              onClick={() => setVisible(true)}
+            >
+              Connect Wallet
+            </button>
           </div>
         )}
         <img
@@ -96,6 +107,7 @@ const Content: FC = () => {
           className="absolute bottom-0 left-0"
           alt="$BONK Logo"
         />
+        <WalletButton />
       </div>
     </div>
   );
