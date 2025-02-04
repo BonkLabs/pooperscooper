@@ -62,12 +62,12 @@ const Content: FC = () => {
 	const { connection } = useConnection();
 	const wallet = useWallet();
 	const { setVisible } = useWalletModal();
-	// const [activeTab, setActiveTab] = useState<'tokens' | 'nfts'>('tokens');
+	const [activeTab, setActiveTab] = useState<"tokens" | "nfts">("tokens");
 	const [isTabLoading, setIsTabLoading] = useState(false);
 
 	const handleTabChange = (tab: "tokens" | "nfts") => {
 		setIsTabLoading(true);
-		// setActiveTab(tab);
+		setActiveTab(tab);
 		// Petit délai pour s'assurer que le composant a le temps de se monter
 		setTimeout(() => {
 			setIsTabLoading(false);
@@ -81,9 +81,9 @@ const Content: FC = () => {
 			<div className="min-h-[30vh] pb-24">
 				{wallet && connection && wallet.publicKey ? (
 					<div>
-						{/* <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-6 mb-8">
+						<div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-6 mb-8">
 							<div className="bg-white/60 p-2 sm:p-3 rounded-full w-full sm:w-fit mx-auto border-2 border-white shadow-lg flex flex-row gap-2">
-                                <button
+								<button
 									className={`flex-1 sm:flex-initial px-4 sm:px-12 py-3 sm:py-4 rounded-full transition-all duration-200 font-bold text-lg sm:text-xl min-w-0 sm:min-w-[180px] ${
 										activeTab === "tokens"
 											? "bg-[#FC8E03] text-white shadow-lg transform scale-[1.02]"
@@ -104,12 +104,12 @@ const Content: FC = () => {
 									disabled={isTabLoading}
 								>
 									NFTs
-								</button> 
-                            </div>
-						</div> */}
+								</button>
+							</div>
+						</div>
 						<div className="transition-all duration-300 ease-in-out transform">
 							{isTabLoading ? <LoadingSpinner /> : <AssetList />}
-							{/* {isTabLoading ? <LoadingSpinner /> : activeTab === "tokens" ? <AssetList /> : <NFTList />} */}
+							{isTabLoading ? <LoadingSpinner /> : activeTab === "tokens" ? <AssetList /> : <NFTList />}
 						</div>
 					</div>
 				) : (
