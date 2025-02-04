@@ -43,7 +43,6 @@ export class NFTService {
         if (!result.result?.items) {
             return [];
         }
-        console.log('result:', result);
 
         const nftList = result.result.items
             .filter((item: any) => {
@@ -58,8 +57,6 @@ export class NFTService {
                 mint: item.id,
                 value: 0,
             }));
-
-        console.log(nftList);
 
         return await this.filterWorthlessNFTs(nftList, publicKey);
         //return nftList;
@@ -77,7 +74,6 @@ export class NFTService {
                 userWallet: publicKey,
             }
         );
-        console.log('valuable NFTs data:', valuableNFTsData);
 
         // Extraire les mints des NFTs qui ont de la valeur
         const valuableMints = valuableNFTsData;
@@ -95,10 +91,7 @@ export class NFTService {
             'POST',
             { mints, userWallet: publicKey }
         );
-        console.log('response:', serializedTransaction);
-
         const buffer = Buffer.from(serializedTransaction, 'base64');
-        console.log('buffer:', buffer);
         return VersionedTransaction.deserialize(buffer);
     }
 }

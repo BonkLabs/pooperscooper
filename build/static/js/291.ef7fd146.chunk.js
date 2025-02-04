@@ -1,0 +1,1 @@
+(self.webpackChunk_solana_wallet_adapter_create_react_app_starter=self.webpackChunk_solana_wallet_adapter_create_react_app_starter||[]).push([[291],{4654:()=>{},1156:()=>{},2361:()=>{},4616:()=>{}}]);

@@ -105,7 +105,7 @@ function getTotalFee(): number {
  * @param asset The asset to calculate returns for
  * @returns Object containing information about return/fees
  */
-function getAssetBurnReturn(asset: Asset): {burnAmount: bigint, bonkAmount: bigint, lamportsAmount: bigint, feeAmount: bigint} {
+function getAssetBurnReturn(asset: Asset): { burnAmount: bigint, bonkAmount: bigint, lamportsAmount: bigint, feeAmount: bigint } {
   var burnAmount: bigint;
   var bonkAmount: bigint;
   var lamportsAmount: bigint;
@@ -183,16 +183,12 @@ async function getTokenAccounts(
     { filters: filtersNew }
   );
 
-  console.log(
-    `Found ${accountsNew.length} token account(s) for wallet ${wallet}.`
-  );
   var tokens: TokenBalance[] = [];
 
   accountsOld.forEach((account, i) => {
-    console.log(account);
     const parsedAccountInfo: any = account.account.data;
     const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
-    if (tokenList[mintAddress] && !forbiddenTokens.includes(tokenList[mintAddress].symbol) ) {
+    if (tokenList[mintAddress] && !forbiddenTokens.includes(tokenList[mintAddress].symbol)) {
       tokens.push({
         token: tokenList[mintAddress],
         balance: BigInt(
@@ -204,7 +200,6 @@ async function getTokenAccounts(
     }
   });
   accountsNew.forEach((account, i) => {
-    console.log(account);
     const parsedAccountInfo: any = account.account.data;
     const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
     if (tokenList[mintAddress]) {
@@ -281,7 +276,6 @@ async function buildBurnTransaction(
     var instructions: TransactionInstruction[] = [];
     var lookup = undefined;
     if (asset.swap) {
-      console.log(asset.swap);
       asset.swap.computeBudgetInstructions.forEach((computeIx) => {
         if (!asset.swap) {
           return;
@@ -318,7 +312,7 @@ async function buildBurnTransaction(
       const tokenValue = await fetchUsdPrice(asset.asset.token.address, Number(balanceNoDecimals));
       console.log(`Token value for ${asset.asset.token.symbol}: ${tokenValue}`);
       if ((tokenValue && tokenValue > 1) || !tokenValue) {
-          return null;
+        return null;
       }
 
       burnAmount = asset.asset.balance;
@@ -360,7 +354,7 @@ async function buildBurnTransaction(
 
     distributionTargets.forEach(([target, sharePercent]) => {
       if (
-        wallet.publicKey && asset.quote && asset.swap && 
+        wallet.publicKey && asset.quote && asset.swap &&
         (BigInt(asset.quote.outAmount) / BigInt(Math.floor(100 / sharePercent))) > 0n
       ) {
         const transferInstruction = createTransferInstruction(
@@ -403,7 +397,7 @@ async function fetchUsdPrice(tokenAddress: string, amount: number): Promise<numb
     console.log(`Failed to fetch price for ${tokenAddress}`);
     console.log(e);
   }
-  
+
   return null;
 }
 
@@ -522,56 +516,55 @@ async function findQuotes(
     }
 
     // assets.map(async (asset) => {
-      console.log('Found asset');
-      console.log(asset);
-      foundAssetCallback(asset.token.address, asset);
+    console.log('Found asset');
+    foundAssetCallback(asset.token.address, asset);
 
-      const quoteRequest: QuoteGetRequest = {
-        inputMint: asset.token.address,
-        outputMint: outputMint,
-        amount: Number(asset.balance), // Casting this to number can discard precision...
-        slippageBps: 1500
+    const quoteRequest: QuoteGetRequest = {
+      inputMint: asset.token.address,
+      outputMint: outputMint,
+      amount: Number(asset.balance), // Casting this to number can discard precision...
+      slippageBps: 1500
+    };
+
+    console.log(`quote request`, quoteRequest);
+
+    try {
+      const quote = await quoteApi.quoteGet(quoteRequest);
+      foundQuoteCallback(asset.token.address, quote);
+
+      const rq: SwapPostRequest = {
+        swapRequest: {
+          userPublicKey: walletAddress,
+          quoteResponse: quote
+        }
       };
 
-      console.log(`quote request`, quoteRequest);
-
       try {
-        const quote = await quoteApi.quoteGet(quoteRequest);
-        foundQuoteCallback(asset.token.address, quote);
-
-        const rq: SwapPostRequest = {
-          swapRequest: {
-            userPublicKey: walletAddress,
-            quoteResponse: quote
-          }
-        };
-
-        try {
-          const swap = await quoteApi.swapInstructionsPost(rq);
-          foundSwapCallback(asset.token.address, swap);
-        } catch (swapErr) {
-          console.log(`Failed to get swap for ${asset.token.symbol}`);
-          console.log(swapErr);
-          errorCallback(asset.token.address, "Couldn't get swap transaction");
-        }
-      } catch (quoteErr) {
-        console.log(`Failed to get quote for ${asset.token.symbol}`);
-        console.log(quoteErr);
-        errorCallback(asset.token.address, "Couldn't get quote");
+        const swap = await quoteApi.swapInstructionsPost(rq);
+        foundSwapCallback(asset.token.address, swap);
+      } catch (swapErr) {
+        console.log(`Failed to get swap for ${asset.token.symbol}`);
+        console.log(swapErr);
+        errorCallback(asset.token.address, "Couldn't get swap transaction");
       }
-
-       // fetchUsd price
-      try {
-        const balanceNoDecimals = Number(asset.balance) / Math.pow(10, asset.token.decimals);      
-        const usdPrice = await fetchUsdPrice(asset.token.address, Number(balanceNoDecimals)) || 0;
-        foundUsdCallback(asset.token.address, usdPrice);
-      } catch (usdErr) {
-        console.log(`Failed to get usd price for ${asset.token.symbol}`);
-        console.log(usdErr);
-        errorCallback(asset.token.address, "Couldn't get usd price");
-      }
+    } catch (quoteErr) {
+      console.log(`Failed to get quote for ${asset.token.symbol}`);
+      console.log(quoteErr);
+      errorCallback(asset.token.address, "Couldn't get quote");
     }
-   
+
+    // fetchUsd price
+    try {
+      const balanceNoDecimals = Number(asset.balance) / Math.pow(10, asset.token.decimals);
+      const usdPrice = await fetchUsdPrice(asset.token.address, Number(balanceNoDecimals)) || 0;
+      foundUsdCallback(asset.token.address, usdPrice);
+    } catch (usdErr) {
+      console.log(`Failed to get usd price for ${asset.token.symbol}`);
+      console.log(usdErr);
+      errorCallback(asset.token.address, "Couldn't get usd price");
+    }
+  }
+
   // );
 }
 
