@@ -1,4 +1,5 @@
 node_modules/
+build/
 
 # misc
 .DS_Store
@@ -26,3 +27,4 @@ next-env.d.ts
 
 # prisma
 db/
+
