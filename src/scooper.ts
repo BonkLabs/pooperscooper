@@ -137,6 +137,24 @@ function getAssetBurnReturn(asset: Asset): { burnAmount: bigint, bonkAmount: big
   }
 }
 
+async function getMintInfo(mints: string[], solanaConnection: Connection): Promise<any> {
+  const response = await fetch(solanaConnection.rpcEndpoint, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      "id": "BONKscooper",
+      "jsonrpc": "2.0",
+      "method": "getAssetBatch",
+      "params": {
+        "ids": mints
+      }
+    }),
+  });
+  const data = await response.json();
+  return data;
+}
 /**
  * Gets token accounts including standard and token22 accounts
  *
@@ -152,64 +170,41 @@ async function getTokenAccounts(
   solanaConnection: Connection,
   tokenList: { [id: string]: TokenInfo }
 ): Promise<TokenBalance[]> {
-  const filters: GetProgramAccountsFilter[] = [
-    {
-      dataSize: 165
-    },
-    {
-      memcmp: {
-        offset: 32,
-        bytes: wallet
-      }
-    }
-  ];
-  const accountsOld = await solanaConnection.getParsedProgramAccounts(
-    TOKEN_PROGRAM_ID,
-    { filters: filters }
-  );
-  const filtersNew: GetProgramAccountsFilter[] = [
-    {
-      dataSize: 182
-    },
-    {
-      memcmp: {
-        offset: 32,
-        bytes: wallet
-      }
-    }
-  ];
-  const accountsNew = await solanaConnection.getParsedProgramAccounts(
-    TOKEN_2022_PROGRAM_ID,
-    { filters: filtersNew }
-  );
 
+  const response = await fetch(solanaConnection.rpcEndpoint, {
+    method: 'POST',
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      "id": "BONKscooper",
+      "jsonrpc": "2.0",
+      "method": "getTokenAccounts",
+      "params": {
+        "owner": wallet,
+        "page": 1,
+        "limit": 1000,
+        "options": {}
+      }
+    }),
+  });
+  const data = await response.json();
+  const tokenAccounts = data.result.token_accounts;
   var tokens: TokenBalance[] = [];
 
-  accountsOld.forEach((account, i) => {
-    const parsedAccountInfo: any = account.account.data;
-    const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
-    if (tokenList[mintAddress] && !forbiddenTokens.includes(tokenList[mintAddress].symbol)) {
+  const mintAddresses = tokenAccounts.map((account: any) => account.mint);
+
+  const mintInfo = await getMintInfo(mintAddresses, solanaConnection);
+
+  tokenAccounts.forEach((account: any, i: number) => {
+    if (tokenList[account.mint] && !forbiddenTokens.includes(tokenList[account.mint].symbol)) {
+      const thisMint = mintInfo.result.find((mintInfo: any) => account.mint === mintInfo.id);
+
       tokens.push({
-        token: tokenList[mintAddress],
-        balance: BigInt(
-          parsedAccountInfo['parsed']['info']['tokenAmount']['amount']
-        ),
-        programId: TOKEN_PROGRAM_ID,
-        ataId: account.pubkey
-      });
-    }
-  });
-  accountsNew.forEach((account, i) => {
-    const parsedAccountInfo: any = account.account.data;
-    const mintAddress: string = parsedAccountInfo['parsed']['info']['mint'];
-    if (tokenList[mintAddress]) {
-      tokens.push({
-        token: tokenList[mintAddress],
-        balance: BigInt(
-          parsedAccountInfo['parsed']['info']['tokenAmount']['amount']
-        ),
-        programId: TOKEN_2022_PROGRAM_ID,
-        ataId: account.pubkey
+        token: tokenList[account.mint],
+        balance: BigInt(account.amount),
+        programId: thisMint.token_info.token_program,
+        ataId: new PublicKey(account.address)
       });
     }
   });
