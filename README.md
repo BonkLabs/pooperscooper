@@ -1,4 +1,4 @@
-# Pooper Scooper
+# BONKscooper
 
 Solana web3 dapp that allows users to "clean" shit tokens out of their wallet and convert it all to bonk
 

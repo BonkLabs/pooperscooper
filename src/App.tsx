@@ -16,7 +16,7 @@ require("@solana/wallet-adapter-react-ui/styles.css");
 const network = process.env.REACT_APP_RPC_URL!;
 
 registerTipLinkWallet({
-	title: "Pooper Scooper",
+	title: "BONKscooper",
 	clientId: "205a8337-937e-42ea-96b5-577c77ed7153",
 	theme: "light", // pick between "dark"/"light"/"system",
 	rpcUrl: network,
