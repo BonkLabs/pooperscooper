@@ -323,7 +323,7 @@ async function buildBurnTransaction(
         wallet.publicKey,
         burnAmount,
         [],
-        asset.asset.programId
+        new PublicKey(asset.asset.programId)
       );
       instructions.push(burnIx);
     }
