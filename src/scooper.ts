@@ -270,6 +270,8 @@ async function buildBurnTransaction(
   if (asset.checked && wallet.publicKey) {
     var instructions: TransactionInstruction[] = [];
     var lookup = undefined;
+    console.log(`asset in build burn`)
+    console.log(asset);
     if (asset.swap) {
       asset.swap.computeBudgetInstructions.forEach((computeIx) => {
         if (!asset.swap) {
@@ -342,7 +344,7 @@ async function buildBurnTransaction(
         wallet.publicKey,
         wallet.publicKey,
         [],
-        asset.asset.programId
+        new PublicKey(asset.asset.programId)
       );
       instructions.push(closeAccountIx);
     }
