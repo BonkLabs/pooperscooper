@@ -365,7 +365,6 @@ async function buildBurnTransaction(
       }
     });
 
-    console.log(instructions);
     if (instructions.length > 0) {
       const message = new TransactionMessage({
         payerKey: wallet.publicKey,
@@ -418,6 +417,7 @@ async function sweepTokens(
   const transactions: [string, VersionedTransaction][] = [];
   const blockhash = await (await connection.getLatestBlockhash()).blockhash;
 
+  try {
   await Promise.all(
     assets.map(async (asset) => {
       const tx = await buildBurnTransaction(
@@ -431,15 +431,18 @@ async function sweepTokens(
       }
     })
   );
-
+} catch (e) {
+  console.log('Error building transactions');
+  console.log(e);
+  }
   console.log('Transactions');
   console.log(transactions);
 
-  // for (let i = 0; i < transactions.length; i++) {
-  //   const simulate = await connection.simulateTransaction(transactions[i][1]);
-  //   console.log('Simulated transaction:');
-  //   console.log(simulate);
-  // }
+  for (let i = 0; i < transactions.length; i++) {
+    const simulate = await connection.simulateTransaction(transactions[i][1]);
+    console.log('Simulated transaction:');
+    console.log(simulate);
+  }
 
   if (wallet.signAllTransactions) {
     const signedTransactions = await wallet.signAllTransactions(
