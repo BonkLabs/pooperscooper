@@ -9,6 +9,7 @@ import { registerTipLinkWallet } from "@tiplink/wallet-adapter";
 import { TipLinkWalletAutoConnectV2 } from "@tiplink/wallet-adapter-react-ui";
 import WalletButton from "./components/WalletButton";
 import NFTList from "./components/NFTList";
+import DeprecationOverlay from "./components/DeprecationOverlay";
 
 require("./App.css");
 require("@solana/wallet-adapter-react-ui/styles.css");
@@ -76,6 +77,7 @@ const Content: FC = () => {
 
 	return (
 		<div className="bg-gradient-to-r from-[#FC8E03] to-[#FFD302] p-4 sm:p-8 md:p-16 lg:p-24 min-h-screen relative">
+			<DeprecationOverlay />
 			<Header />
 			<Info />
 			<div className="min-h-[30vh] pb-24">
